@@ -387,11 +387,60 @@ h3 {
     border-color: #28a745;
 }
 
+.character-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    margin-bottom: 15px;
+}
+
 .character-inventory h3 {
-    margin-top: 0;
+    margin: 0;
     color: #2a5298;
-    border-bottom: 2px solid #2a5298;
-    padding-bottom: 10px;
+    flex: 1;
+}
+
+.character-inventory.player h3 {
+    color: #28a745;
+}
+
+.character-stats-mini {
+    display: flex;
+    gap: 10px;
+    font-size: 0.85em;
+    color: #666;
+}
+
+.character-stats-mini span {
+    background: #f0f0f0;
+    padding: 4px 8px;
+    border-radius: 4px;
+    white-space: nowrap;
+}
+
+.inventory-slot-bar {
+    width: 100%;
+    height: 8px;
+    background: #e0e0e0;
+    border-radius: 4px;
+    overflow: hidden;
+    margin-bottom: 5px;
+}
+
+.slot-usage {
+    height: 100%;
+    background: linear-gradient(90deg, #2a5298, #1e3c72);
+    transition: width 0.3s ease;
+}
+
+.character-inventory.player .slot-usage {
+    background: linear-gradient(90deg, #28a745, #1e7e34);
+}
+
+.slot-info {
+    font-size: 0.8em;
+    color: #999;
+    margin-bottom: 10px;
 }
 
 .inventory-items {
@@ -406,36 +455,67 @@ h3 {
     justify-content: space-between;
     align-items: center;
     background: white;
-    padding: 10px;
+    padding: 12px;
     border-radius: 5px;
     border: 1px solid #ddd;
+    transition: all 0.2s ease;
+}
+
+.inventory-item-row:hover {
+    border-color: #2a5298;
+    box-shadow: 0 2px 8px rgba(42, 82, 152, 0.1);
+}
+
+.item-info {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+    flex: 1;
 }
 
 .inventory-item-name {
     font-weight: bold;
     color: #333;
-    flex: 1;
+    font-size: 1em;
+}
+
+.item-description {
+    font-size: 0.8em;
+    color: #999;
+    font-style: italic;
+}
+
+.transfer-buttons {
+    display: flex;
+    gap: 6px;
+    flex-wrap: wrap;
+    justify-content: flex-end;
 }
 
 .transfer-btn {
-    padding: 5px 10px;
+    padding: 6px 12px;
     border: none;
     border-radius: 4px;
     cursor: pointer;
-    font-size: 0.85em;
-    font-weight: bold;
+    font-size: 0.8em;
+    font-weight: 500;
     background: #2a5298;
     color: white;
-    margin-left: 5px;
+    transition: all 0.2s ease;
+    white-space: nowrap;
 }
 
 .transfer-btn:hover {
     background: #1e3c72;
+    transform: translateY(-2px);
+    box-shadow: 0 4px 8px rgba(42, 82, 152, 0.3);
 }
 
 .transfer-btn:disabled {
     background: #ccc;
     cursor: not-allowed;
+    transform: none;
+    opacity: 0.6;
 }
 
 .empty-inventory {
@@ -443,6 +523,31 @@ h3 {
     color: #999;
     padding: 20px;
     font-style: italic;
+}
+
+.trash-inventory {
+    border-color: #dc3545 !important;
+    background: #fff5f5 !important;
+}
+
+.trash-inventory h3 {
+    color: #dc3545 !important;
+}
+
+.trash-btn {
+    background: #dc3545 !important;
+}
+
+.trash-btn:hover {
+    background: #c82333 !important;
+}
+
+.restore-btn {
+    background: #51cf66 !important;
+}
+
+.restore-btn:hover {
+    background: #37b24d !important;
 }
 
 /* ==================== DICE ROLL PANEL ==================== */

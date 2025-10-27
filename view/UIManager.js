@@ -112,98 +112,190 @@ Game.prototype.openInventory = function() {
 };
 
 Game.prototype.closeInventory = function() {
+    // Clear trash when closing inventory
+    if (this.inventoryTrash && this.inventoryTrash.length > 0) {
+        this.state.addLog(`🗑️ ${this.inventoryTrash.length} item${this.inventoryTrash.length !== 1 ? 's' : ''} permanently deleted`, 'info');
+        this.inventoryTrash = [];
+    }
     document.getElementById('inventoryModal').style.display = 'none';
 };
 
 Game.prototype.renderInventoryManagement = function() {
     const content = document.getElementById('inventoryContent');
-    
+
     // Create a list of all characters (player + companions)
     const allCharacters = [
         { char: this.state.player, name: 'Player', isPlayer: true },
         ...this.state.companions.map((c, idx) => ({ char: c, name: c.name, idx, isPlayer: false }))
     ];
-    
+
+    // Initialize trash if it doesn't exist
+    if (!this.inventoryTrash) {
+        this.inventoryTrash = [];
+    }
+
+    const trashCount = this.inventoryTrash.length;
+
     content.innerHTML = `
         <div class="inventory-grid">
             ${allCharacters.map((charData) => {
                 const { char, name, isPlayer } = charData;
+                const slotUsage = char.inventory.length;
+                const maxSlots = char.maxInventory;
+                const slotPercentage = (slotUsage / maxSlots) * 100;
+
                 return `
                     <div class="character-inventory ${isPlayer ? 'player' : ''}">
-                        <h3>${isPlayer ? '👤 ' : '🤝 '}${name}</h3>
-                        <div style="font-size: 0.9em; color: #666; margin-bottom: 10px;">
-                            Slots: ${char.inventory.length}/${char.maxInventory}
+                        <div class="character-header">
+                            <h3>${isPlayer ? '👤 ' : '🤝 '}${name}</h3>
+                            <div class="character-stats-mini">
+                                <span title="Wounds">💔 ${char.wounds}/${char.maxWounds}</span>
+                                <span title="Food">🍖 ${char.food}</span>
+                                <span title="Luck">✨ ${char.luck}</span>
+                            </div>
                         </div>
+
+                        <div class="inventory-slot-bar">
+                            <div class="slot-usage" style="width: ${slotPercentage}%"></div>
+                        </div>
+                        <div class="slot-info">${slotUsage}/${maxSlots} slots</div>
+
                         <div class="inventory-items" id="inv-${isPlayer ? 'player' : charData.idx}">
-                            ${char.inventory.length === 0 ? 
-                                '<div class="empty-inventory">No items</div>' :
-                                char.inventory.map((item, itemIdx) => `
-                                    <div class="inventory-item-row">
-                                        <span class="inventory-item-name">${item}</span>
-                                        <div>
-                                            ${allCharacters.filter(other => 
-                                                (isPlayer ? !other.isPlayer : other.isPlayer || other.idx !== charData.idx)
-                                            ).map(targetChar => {
-                                                const targetId = targetChar.isPlayer ? 'player' : targetChar.idx;
-                                                const targetName = targetChar.isPlayer ? 'Player' : targetChar.name;
-                                                const canTransfer = targetChar.char.inventory.length < targetChar.char.maxInventory;
-                                                return `
-                                                    <button 
-                                                        class="transfer-btn" 
-                                                        data-from="${isPlayer ? 'player' : charData.idx}"
-                                                        data-to="${targetId}"
-                                                        data-item="${item}"
-                                                        ${!canTransfer ? 'disabled' : ''}
-                                                        title="Transfer to ${targetName}">
-                                                        → ${targetChar.isPlayer ? '👤' : targetChar.name.substring(0, 2)}
-                                                    </button>
-                                                `;
-                                            }).join('')}
+                            ${char.inventory.length === 0 ?
+                                '<div class="empty-inventory">📭 No items</div>' :
+                                char.inventory.map((item) => {
+                                    const itemData = ITEMS[item];
+                                    return `
+                                        <div class="inventory-item-row">
+                                            <div class="item-info">
+                                                <span class="inventory-item-name">${item}</span>
+                                                <span class="item-description">${itemData ? itemData.description : ''}</span>
+                                            </div>
+                                            <div class="transfer-buttons">
+                                                ${allCharacters.filter(other =>
+                                                    (isPlayer ? !other.isPlayer : other.isPlayer || other.idx !== charData.idx)
+                                                ).map(targetChar => {
+                                                    const targetId = targetChar.isPlayer ? 'player' : targetChar.idx;
+                                                    const targetName = targetChar.isPlayer ? 'Player' : targetChar.name;
+                                                    const canTransfer = targetChar.char.inventory.length < targetChar.char.maxInventory;
+                                                    return `
+                                                        <button
+                                                            class="transfer-btn"
+                                                            data-from="${isPlayer ? 'player' : charData.idx}"
+                                                            data-to="${targetId}"
+                                                            data-item="${item}"
+                                                            ${!canTransfer ? 'disabled' : ''}
+                                                            title="Transfer to ${targetName}">
+                                                            ${targetChar.isPlayer ? '👤' : '🤝'} ${targetName}
+                                                        </button>
+                                                    `;
+                                                }).join('')}
+                                                <button
+                                                    class="transfer-btn trash-btn"
+                                                    data-from="${isPlayer ? 'player' : charData.idx}"
+                                                    data-to="trash"
+                                                    data-item="${item}"
+                                                    title="Delete item">
+                                                    🗑️ Delete
+                                                </button>
+                                            </div>
                                         </div>
-                                    </div>
-                                `).join('')
+                                    `;
+                                }).join('')
                             }
                         </div>
                     </div>
                 `;
             }).join('')}
+
+            <!-- Trash/Delete Bin -->
+            <div class="character-inventory trash-inventory">
+                <div class="character-header">
+                    <h3>🗑️ Delete Items</h3>
+                    <div class="character-stats-mini">
+                        <span title="Items to delete">${trashCount} item${trashCount !== 1 ? 's' : ''}</span>
+                    </div>
+                </div>
+
+                <div class="inventory-items" id="inv-trash">
+                    ${trashCount === 0 ?
+                        '<div class="empty-inventory">📭 No items marked for deletion</div>' :
+                        this.inventoryTrash.map((item) => {
+                            const itemData = ITEMS[item];
+                            return `
+                                <div class="inventory-item-row">
+                                    <div class="item-info">
+                                        <span class="inventory-item-name">${item}</span>
+                                        <span class="item-description">${itemData ? itemData.description : ''}</span>
+                                    </div>
+                                    <div class="transfer-buttons">
+                                        ${allCharacters.map(targetChar => {
+                                            const targetId = targetChar.isPlayer ? 'player' : targetChar.idx;
+                                            const targetName = targetChar.isPlayer ? 'Player' : targetChar.name;
+                                            const canTransfer = targetChar.char.inventory.length < targetChar.char.maxInventory;
+                                            return `
+                                                <button
+                                                    class="transfer-btn restore-btn"
+                                                    data-from="trash"
+                                                    data-to="${targetId}"
+                                                    data-item="${item}"
+                                                    ${!canTransfer ? 'disabled' : ''}
+                                                    title="Restore to ${targetName}">
+                                                    ↩️ ${targetName}
+                                                </button>
+                                            `;
+                                        }).join('')}
+                                    </div>
+                                </div>
+                            `;
+                        }).join('')
+                    }
+                </div>
+            </div>
         </div>
     `;
-    
+
     // Add event listeners to all transfer buttons
     document.querySelectorAll('.transfer-btn').forEach(btn => {
         btn.addEventListener('click', (e) => {
             const fromId = e.target.getAttribute('data-from');
             const toId = e.target.getAttribute('data-to');
             const item = e.target.getAttribute('data-item');
-            this.transferItem(fromId, toId, item);
+
+            if (toId === 'trash') {
+                this.deleteItem(fromId, item);
+            } else if (fromId === 'trash') {
+                this.restoreItem(toId, item);
+            } else {
+                this.transferItem(fromId, toId, item);
+            }
         });
     });
 };
 
 Game.prototype.transferItem = function(fromId, toId, itemName) {
     let fromChar, toChar;
-    
+
     // Get source character
     if (fromId === 'player') {
         fromChar = this.state.player;
     } else {
         fromChar = this.state.companions[parseInt(fromId)];
     }
-    
+
     // Get destination character
     if (toId === 'player') {
         toChar = this.state.player;
     } else {
         toChar = this.state.companions[parseInt(toId)];
     }
-    
+
     // Check if destination has space
     if (toChar.inventory.length >= toChar.maxInventory) {
         this.state.addLog(`${toChar.name}'s inventory is full!`, 'danger');
         return;
     }
-    
+
     // Transfer the item
     if (fromChar.removeFromInventory(itemName)) {
         if (toChar.addToInventory(itemName)) {
@@ -214,6 +306,63 @@ Game.prototype.transferItem = function(fromId, toId, itemName) {
             // Rollback if add fails
             fromChar.addToInventory(itemName);
             this.state.addLog(`Failed to transfer ${itemName}`, 'danger');
+        }
+    }
+};
+
+Game.prototype.deleteItem = function(fromId, itemName) {
+    let fromChar;
+
+    // Get source character
+    if (fromId === 'player') {
+        fromChar = this.state.player;
+    } else {
+        fromChar = this.state.companions[parseInt(fromId)];
+    }
+
+    // Remove from character inventory
+    if (fromChar.removeFromInventory(itemName)) {
+        // Add to trash
+        if (!this.inventoryTrash) {
+            this.inventoryTrash = [];
+        }
+        this.inventoryTrash.push(itemName);
+        this.state.addLog(`${itemName} marked for deletion`, 'info');
+        this.render();
+        this.renderInventoryManagement();
+    }
+};
+
+Game.prototype.restoreItem = function(toId, itemName) {
+    let toChar;
+
+    // Get destination character
+    if (toId === 'player') {
+        toChar = this.state.player;
+    } else {
+        toChar = this.state.companions[parseInt(toId)];
+    }
+
+    // Check if destination has space
+    if (toChar.inventory.length >= toChar.maxInventory) {
+        this.state.addLog(`${toChar.name}'s inventory is full!`, 'danger');
+        return;
+    }
+
+    // Remove from trash
+    const trashIndex = this.inventoryTrash.indexOf(itemName);
+    if (trashIndex > -1) {
+        this.inventoryTrash.splice(trashIndex, 1);
+
+        // Add to character inventory
+        if (toChar.addToInventory(itemName)) {
+            this.state.addLog(`Restored ${itemName} to ${toChar.name}`, 'success');
+            this.render();
+            this.renderInventoryManagement();
+        } else {
+            // Rollback if add fails
+            this.inventoryTrash.push(itemName);
+            this.state.addLog(`Failed to restore ${itemName}`, 'danger');
         }
     }
 };
