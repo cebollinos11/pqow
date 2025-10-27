@@ -39,6 +39,11 @@ function setupGameButtons() {
         debugBtn.onclick = () => game.debugAddCompanion();
     }
 
+    const debugItemsBtn = document.getElementById('debugItemsBtn');
+    if (debugItemsBtn) {
+        debugItemsBtn.onclick = () => game.debugGiveItemsAndCompanion();
+    }
+
     const encounterBtn = document.getElementById('encounterBtn');
     if (encounterBtn) {
         encounterBtn.onclick = () => game.openEncounterSelector();

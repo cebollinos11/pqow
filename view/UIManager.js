@@ -374,15 +374,49 @@ Game.prototype.debugAddCompanion = function() {
         'Fierce Warrior', 'Cunning Thief', 'Noble Paladin', 'Wild Ranger',
         'Mysterious Assassin', 'Friendly Bard', 'Ancient Druid', 'Battle Monk'
     ];
-    
+
     const randomName = companionNames[Math.floor(Math.random() * companionNames.length)];
     const companion = new Character(randomName, 3, 3, 1);
-    
+
     const randomSkill = SKILLS[Math.floor(Math.random() * SKILLS.length)];
     companion.addSkill(randomSkill);
-    
+
     this.state.addCompanion(companion);
     this.state.addLog(`${randomName} with ${randomSkill} skill has joined your party!`, 'success');
+    this.render();
+};
+
+Game.prototype.debugGiveItemsAndCompanion = function() {
+    // Get all item names
+    const itemNames = Object.keys(ITEMS);
+
+    // Add 4 random items to player
+    const itemsAdded = [];
+    for (let i = 0; i < 4; i++) {
+        const randomItem = itemNames[Math.floor(Math.random() * itemNames.length)];
+        if (this.state.player.addToInventory(randomItem)) {
+            itemsAdded.push(randomItem);
+        }
+    }
+
+    if (itemsAdded.length > 0) {
+        this.state.addLog(`📦 Added to inventory: ${itemsAdded.join(', ')}`, 'success');
+    }
+
+    // Create "carry" companion with 2 random items
+    const carry = new Character('carry', 3, 6, 1);
+
+    const companionItemsAdded = [];
+    for (let i = 0; i < 2; i++) {
+        const randomItem = itemNames[Math.floor(Math.random() * itemNames.length)];
+        if (carry.addToInventory(randomItem)) {
+            companionItemsAdded.push(randomItem);
+        }
+    }
+
+    this.state.addCompanion(carry);
+    this.state.addLog(`🤝 Companion "carry" joined with: ${companionItemsAdded.join(', ')}`, 'success');
+
     this.render();
 };
 
