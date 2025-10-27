@@ -28,20 +28,25 @@ function setupGameButtons() {
     if (shopBtn) {
         shopBtn.onclick = () => game.openShop();
     }
-    
+
     const inventoryBtn = document.getElementById('inventoryBtn');
     if (inventoryBtn) {
         inventoryBtn.onclick = () => game.openInventory();
     }
-    
+
     const debugBtn = document.getElementById('debugBtn');
     if (debugBtn) {
         debugBtn.onclick = () => game.debugAddCompanion();
     }
-    
+
     const encounterBtn = document.getElementById('encounterBtn');
     if (encounterBtn) {
         encounterBtn.onclick = () => game.openEncounterSelector();
+    }
+
+    const woundsBtn = document.getElementById('woundsBtn');
+    if (woundsBtn) {
+        woundsBtn.onclick = () => game.testWounds(3);
     }
 }
 
@@ -50,12 +55,12 @@ function setupModalListeners() {
     if (closeShop) {
         closeShop.addEventListener('click', () => game.closeShop());
     }
-    
+
     const closeInventory = document.getElementById('closeInventory');
     if (closeInventory) {
         closeInventory.addEventListener('click', () => game.closeInventory());
     }
-    
+
     const closeEncounter = document.getElementById('closeEncounter');
     if (closeEncounter) {
         closeEncounter.addEventListener('click', () => game.closeEncounterSelector());
@@ -85,7 +90,7 @@ function setupModalListeners() {
         const shopModal = document.getElementById('shopModal');
         const inventoryModal = document.getElementById('inventoryModal');
         const encounterModal = document.getElementById('encounterModal');
-        
+
         if (e.target === shopModal) {
             game.closeShop();
         }

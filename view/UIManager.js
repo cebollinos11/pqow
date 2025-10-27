@@ -1,6 +1,14 @@
 // ==================== VIEW: UI MANAGER ====================
 // This file contains UI management methods that are mixed into the Game class
 
+// Wounds Testing methods
+Game.prototype.testWounds = function(amount = 3) {
+    this.state.addLog(`🧪 Testing wound distribution with ${amount} wounds...`, 'info');
+    this.distributeWounds(amount, () => {
+        this.state.addLog(`✅ Wound distribution test complete!`, 'success');
+    });
+};
+
 // Shop methods
 Game.prototype.openShop = function() {
     document.getElementById('shopModal').style.display = 'block';

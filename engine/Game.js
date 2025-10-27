@@ -21,6 +21,7 @@ class Game {
         document.getElementById('inventoryBtn').style.display = 'block';
         document.getElementById('debugBtn').style.display = 'block';
         document.getElementById('encounterBtn').style.display = 'block';
+        document.getElementById('woundsBtn').style.display = 'block';
         
         this.state.addLog('🎮 Your adventure begins!', 'success');
         this.nextEncounter();
