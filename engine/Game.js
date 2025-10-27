@@ -148,34 +148,63 @@ class Game {
         // Apply wounds to all characters
         const playerWounds = this.state.woundDistribution['player'] || 0;
         this.state.player.takeWounds(playerWounds);
-        
+
+        // Track which companions die
+        const deadCompanionIndices = [];
+
         this.state.companions.forEach((companion, idx) => {
             const wounds = this.state.woundDistribution[`companion-${idx}`] || 0;
             companion.takeWounds(wounds);
+
+            // Check if companion died
+            if (companion.isDead()) {
+                deadCompanionIndices.push(idx);
+            }
         });
-        
+
         // Log the distribution
         Object.entries(this.state.woundDistribution).forEach(([id, wounds]) => {
             if (wounds > 0) {
-                const name = id === 'player' 
-                    ? 'Player' 
+                const name = id === 'player'
+                    ? 'Player'
                     : this.state.companions[parseInt(id.split('-')[1])].name;
                 this.state.addLog(`${name} took ${wounds} wound${wounds > 1 ? 's' : ''}`, 'danger');
             }
         });
-        
+
+        // Move dead companions to deadCompanions array (in reverse order to maintain indices)
+        deadCompanionIndices.reverse().forEach(idx => {
+            const deadCompanion = this.state.companions.splice(idx, 1)[0];
+            this.state.deadCompanions.push(deadCompanion);
+            this.state.addLog(`💀 ${deadCompanion.name} has fallen...`, 'danger');
+        });
+
         // Clear pending wounds
         const callback = this.state.woundCallback;
         this.state.pendingWounds = null;
         this.state.woundCallback = null;
         this.state.woundDistribution = {};
-        
-        // Execute callback if provided
-        if (callback) {
-            callback();
-        }
-        
+
         this.render();
+
+        // If any companions died, open inventory for looting
+        if (deadCompanionIndices.length > 0) {
+            // Track the indices of newly dead companions for looting
+            const newlyDeadIndices = this.state.deadCompanions.slice(-deadCompanionIndices.length).map((_, i) =>
+                this.state.deadCompanions.length - deadCompanionIndices.length + i
+            );
+            this.openInventoryForLooting(newlyDeadIndices, () => {
+                // Execute callback after looting is done
+                if (callback) {
+                    callback();
+                }
+            });
+        } else {
+            // Execute callback if provided and no looting needed
+            if (callback) {
+                callback();
+            }
+        }
     }
     
     // Main render method

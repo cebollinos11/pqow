@@ -108,7 +108,14 @@ Game.prototype.sellItem = function(itemName, price) {
 // Inventory management methods
 Game.prototype.openInventory = function() {
     document.getElementById('inventoryModal').style.display = 'block';
-    this.renderInventoryManagement();
+    this.renderInventoryManagement(false); // false = don't show corpses
+};
+
+Game.prototype.openInventoryForLooting = function(newlyDeadIndices, callback) {
+    this.lootingCallback = callback;
+    this.lootingCorpseIndices = newlyDeadIndices; // Track which corpses to show
+    document.getElementById('inventoryModal').style.display = 'block';
+    this.renderInventoryManagement(true); // true = show corpses
 };
 
 Game.prototype.closeInventory = function() {
@@ -118,9 +125,19 @@ Game.prototype.closeInventory = function() {
         this.inventoryTrash = [];
     }
     document.getElementById('inventoryModal').style.display = 'none';
+
+    // Clear looting state
+    this.lootingCorpseIndices = null;
+
+    // If there was a looting callback, execute it
+    if (this.lootingCallback) {
+        const callback = this.lootingCallback;
+        this.lootingCallback = null;
+        callback();
+    }
 };
 
-Game.prototype.renderInventoryManagement = function() {
+Game.prototype.renderInventoryManagement = function(showCorpses = false) {
     const content = document.getElementById('inventoryContent');
 
     // Create a list of all characters (player + companions)
@@ -135,6 +152,11 @@ Game.prototype.renderInventoryManagement = function() {
     }
 
     const trashCount = this.inventoryTrash.length;
+
+    // Debug: Log if there are dead companions
+    if (this.state.deadCompanions && this.state.deadCompanions.length > 0) {
+        console.log('Dead companions found:', this.state.deadCompanions.length, 'Show corpses:', showCorpses);
+    }
 
     content.innerHTML = `
         <div class="inventory-grid">
@@ -252,6 +274,67 @@ Game.prototype.renderInventoryManagement = function() {
                     }
                 </div>
             </div>
+
+            <!-- Dead Companions' Corpses -->
+            ${(() => {
+                if (!showCorpses || !this.state.deadCompanions || this.state.deadCompanions.length === 0) {
+                    return '';
+                }
+                // Only show corpses that are being looted (newly dead)
+                const corpsesToShow = this.lootingCorpseIndices ?
+                    this.lootingCorpseIndices :
+                    this.state.deadCompanions.map((_, i) => i);
+
+                return corpsesToShow.map((corpseIdx) => {
+                    const corpse = this.state.deadCompanions[corpseIdx];
+                    const corpseItemCount = corpse.inventory.length;
+                    const itemsHtml = corpseItemCount === 0 ?
+                        '<div class="empty-inventory">📭 No items to loot</div>' :
+                        corpse.inventory.map((item) => {
+                            const itemData = ITEMS[item];
+                            const buttonsHtml = allCharacters.map(targetChar => {
+                                const targetId = targetChar.isPlayer ? 'player' : targetChar.idx;
+                                const targetName = targetChar.isPlayer ? 'Player' : targetChar.name;
+                                const canTransfer = targetChar.char.inventory.length < targetChar.char.maxInventory;
+                                return `
+                                    <button
+                                        class="transfer-btn loot-btn"
+                                        data-from="corpse-${corpseIdx}"
+                                        data-to="${targetId}"
+                                        data-item="${item}"
+                                        ${!canTransfer ? 'disabled' : ''}
+                                        title="Loot to ${targetName}">
+                                        🪦 ${targetName}
+                                    </button>
+                                `;
+                            }).join('');
+                            return `
+                                <div class="inventory-item-row">
+                                    <div class="item-info">
+                                        <span class="inventory-item-name">${item}</span>
+                                        <span class="item-description">${itemData ? itemData.description : ''}</span>
+                                    </div>
+                                    <div class="transfer-buttons">
+                                        ${buttonsHtml}
+                                    </div>
+                                </div>
+                            `;
+                        }).join('');
+                    return `
+                        <div class="character-inventory corpse-inventory">
+                            <div class="character-header">
+                                <h3>💀 ${corpse.name}'s Corpse</h3>
+                                <div class="character-stats-mini">
+                                    <span title="Items">${corpseItemCount} item${corpseItemCount !== 1 ? 's' : ''}</span>
+                                </div>
+                            </div>
+                            <div class="inventory-items" id="inv-corpse-${corpseIdx}">
+                                ${itemsHtml}
+                            </div>
+                        </div>
+                    `;
+                }).join('');
+            })()}
         </div>
     `;
 
@@ -262,10 +345,15 @@ Game.prototype.renderInventoryManagement = function() {
             const toId = e.target.getAttribute('data-to');
             const item = e.target.getAttribute('data-item');
 
+            console.log('Transfer button clicked:', { fromId, toId, item });
+
             if (toId === 'trash') {
                 this.deleteItem(fromId, item);
             } else if (fromId === 'trash') {
                 this.restoreItem(toId, item);
+            } else if (fromId && fromId.startsWith('corpse-')) {
+                console.log('Looting from corpse:', fromId);
+                this.lootCorpse(fromId, toId, item);
             } else {
                 this.transferItem(fromId, toId, item);
             }
@@ -301,7 +389,9 @@ Game.prototype.transferItem = function(fromId, toId, itemName) {
         if (toChar.addToInventory(itemName)) {
             this.state.addLog(`Transferred ${itemName} from ${fromChar.name} to ${toChar.name}`, 'success');
             this.render();
-            this.renderInventoryManagement();
+            // Keep showing corpses if we're in looting mode
+            const showCorpses = this.lootingCorpseIndices !== null && this.lootingCorpseIndices !== undefined;
+            this.renderInventoryManagement(showCorpses);
         } else {
             // Rollback if add fails
             fromChar.addToInventory(itemName);
@@ -329,7 +419,9 @@ Game.prototype.deleteItem = function(fromId, itemName) {
         this.inventoryTrash.push(itemName);
         this.state.addLog(`${itemName} marked for deletion`, 'info');
         this.render();
-        this.renderInventoryManagement();
+        // Keep showing corpses if we're in looting mode
+        const showCorpses = this.lootingCorpseIndices !== null && this.lootingCorpseIndices !== undefined;
+        this.renderInventoryManagement(showCorpses);
     }
 };
 
@@ -358,11 +450,54 @@ Game.prototype.restoreItem = function(toId, itemName) {
         if (toChar.addToInventory(itemName)) {
             this.state.addLog(`Restored ${itemName} to ${toChar.name}`, 'success');
             this.render();
-            this.renderInventoryManagement();
+            // Keep showing corpses if we're in looting mode
+            const showCorpses = this.lootingCorpseIndices !== null && this.lootingCorpseIndices !== undefined;
+            this.renderInventoryManagement(showCorpses);
         } else {
             // Rollback if add fails
             this.inventoryTrash.push(itemName);
             this.state.addLog(`Failed to restore ${itemName}`, 'danger');
+        }
+    }
+};
+
+Game.prototype.lootCorpse = function(fromId, toId, itemName) {
+    // Extract corpse index from "corpse-X" format
+    const corpseIdx = parseInt(fromId.split('-')[1]);
+    const corpse = this.state.deadCompanions[corpseIdx];
+
+    if (!corpse) {
+        this.state.addLog(`Corpse not found!`, 'danger');
+        return;
+    }
+
+    let toChar;
+
+    // Get destination character
+    if (toId === 'player') {
+        toChar = this.state.player;
+    } else {
+        toChar = this.state.companions[parseInt(toId)];
+    }
+
+    // Check if destination has space
+    if (toChar.inventory.length >= toChar.maxInventory) {
+        this.state.addLog(`${toChar.name}'s inventory is full!`, 'danger');
+        return;
+    }
+
+    // Remove from corpse inventory
+    if (corpse.removeFromInventory(itemName)) {
+        // Add to character inventory
+        if (toChar.addToInventory(itemName)) {
+            this.state.addLog(`🪦 Looted ${itemName} from ${corpse.name}'s corpse to ${toChar.name}`, 'success');
+            this.render();
+            // Keep showing corpses while looting
+            this.renderInventoryManagement(true);
+        } else {
+            // Rollback if add fails
+            corpse.addToInventory(itemName);
+            this.state.addLog(`Failed to loot ${itemName}`, 'danger');
         }
     }
 };

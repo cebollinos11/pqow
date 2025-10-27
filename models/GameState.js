@@ -3,6 +3,7 @@ class GameState {
     constructor() {
         this.player = new Character('Player', 6, 6, 6);
         this.companions = [];
+        this.deadCompanions = [];
         this.log = [];
         this.currentEncounter = null;
         this.pendingRoll = null;

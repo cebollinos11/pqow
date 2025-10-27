@@ -550,6 +550,23 @@ h3 {
     background: #37b24d !important;
 }
 
+.corpse-inventory {
+    border-color: #6c757d !important;
+    background: #f8f9fa !important;
+}
+
+.corpse-inventory h3 {
+    color: #6c757d !important;
+}
+
+.loot-btn {
+    background: #6c757d !important;
+}
+
+.loot-btn:hover {
+    background: #5a6268 !important;
+}
+
 /* ==================== DICE ROLL PANEL ==================== */
 @keyframes slideIn {
     from {
