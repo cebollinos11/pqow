@@ -92,16 +92,16 @@ Game.prototype.renderLuckPrompt = function() {
 Game.prototype.renderWoundDistribution = function(container) {
     const allCharacters = [
         { char: this.state.player, id: 'player', name: 'Player (You)' },
-        ...this.state.companions.map((c, idx) => ({ 
-            char: c, 
-            id: `companion-${idx}`, 
-            name: c.name 
+        ...this.state.companions.map((c, idx) => ({
+            char: c,
+            id: `companion-${idx}`,
+            name: c.name
         }))
     ];
-    
+
     const totalAssigned = Object.values(this.state.woundDistribution).reduce((a, b) => a + b, 0);
     const remaining = this.state.pendingWounds - totalAssigned;
-    
+
     const panel = document.createElement('div');
     panel.className = 'wound-distribution-panel';
     panel.innerHTML = `
@@ -114,20 +114,36 @@ Game.prototype.renderWoundDistribution = function(container) {
                 const assigned = this.state.woundDistribution[id] || 0;
                 const currentWounds = char.wounds;
                 const maxWounds = char.maxWounds;
-                const canAdd = (currentWounds + assigned) < maxWounds && remaining > 0;
-                const canRemove = assigned > 0;
-                
+                const availableSlots = maxWounds - currentWounds;
+
+                // Create checkboxes for existing wounds (non-interactive)
+                let existingWoundsHtml = '';
+                for (let i = 0; i < currentWounds; i++) {
+                    existingWoundsHtml += `<input type="checkbox" class="wound-checkbox" checked disabled title="Existing wound">`;
+                }
+
+                // Create checkboxes for assigned wounds (interactive)
+                let assignedWoundsHtml = '';
+                for (let i = 0; i < assigned; i++) {
+                    assignedWoundsHtml += `<input type="checkbox" class="wound-checkbox assigned-wound" data-id="${id}" data-index="${i}" checked title="Assigned wound">`;
+                }
+
+                // Create checkboxes for available wounds (interactive)
+                let availableWoundsHtml = '';
+                for (let i = 0; i < availableSlots - assigned; i++) {
+                    availableWoundsHtml += `<input type="checkbox" class="wound-checkbox available-wound" data-id="${id}" data-index="${assigned + i}" title="Click to assign wound">`;
+                }
+
                 return `
                     <div class="wound-character-card">
                         <div class="wound-character-name">${name}</div>
                         <div class="wound-character-health">
-                            Current: ${currentWounds}/${maxWounds}<br>
-                            After: ${currentWounds + assigned}/${maxWounds}
+                            Current: ${currentWounds}/${maxWounds} | Assigning: ${assigned}
                         </div>
-                        <div class="wound-controls">
-                            <button class="wound-btn" data-action="remove" data-id="${id}" ${!canRemove ? 'disabled' : ''}>−</button>
-                            <div class="wound-count">${assigned}</div>
-                            <button class="wound-btn" data-action="add" data-id="${id}" ${!canAdd ? 'disabled' : ''}>+</button>
+                        <div class="wound-checkboxes">
+                            <div class="wound-checkbox-group">
+                                ${existingWoundsHtml}${assignedWoundsHtml}${availableWoundsHtml}
+                            </div>
                         </div>
                     </div>
                 `;
@@ -137,18 +153,29 @@ Game.prototype.renderWoundDistribution = function(container) {
             ${remaining === 0 ? 'Confirm Distribution' : `Assign ${remaining} more wound${remaining !== 1 ? 's' : ''}`}
         </button>
     `;
-    
+
     container.appendChild(panel);
-    
-    // Add event listeners
-    document.querySelectorAll('.wound-btn').forEach(btn => {
-        btn.addEventListener('click', (e) => {
-            const action = e.target.getAttribute('data-action');
+
+    // Add event listeners for checkboxes
+    document.querySelectorAll('.available-wound').forEach(checkbox => {
+        checkbox.addEventListener('change', (e) => {
             const id = e.target.getAttribute('data-id');
-            this.adjustWoundDistribution(id, action === 'add' ? 1 : -1);
+            const index = parseInt(e.target.getAttribute('data-index'));
+            if (e.target.checked) {
+                this.adjustWoundDistribution(id, 1);
+            }
         });
     });
-    
+
+    document.querySelectorAll('.assigned-wound').forEach(checkbox => {
+        checkbox.addEventListener('change', (e) => {
+            const id = e.target.getAttribute('data-id');
+            if (!e.target.checked) {
+                this.adjustWoundDistribution(id, -1);
+            }
+        });
+    });
+
     const confirmBtn = document.getElementById('confirmWounds');
     if (confirmBtn) {
         confirmBtn.addEventListener('click', () => {

@@ -103,17 +103,17 @@ class Game {
             this.render();
             return;
         }
-        
+
         // Store pending wounds and callback
         this.state.pendingWounds = amount;
         this.state.woundCallback = callback;
-        
-        // Initialize distribution (all to player by default)
-        this.state.woundDistribution = { player: amount };
+
+        // Initialize distribution (no preassignment - all wounds unassigned)
+        this.state.woundDistribution = { player: 0 };
         this.state.companions.forEach((c, idx) => {
             this.state.woundDistribution[`companion-${idx}`] = 0;
         });
-        
+
         this.render();
     }
     

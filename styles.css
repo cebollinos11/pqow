@@ -716,41 +716,43 @@ h3 {
     opacity: 0.9;
 }
 
-.wound-controls {
+.wound-checkboxes {
     display: flex;
     align-items: center;
     justify-content: center;
-    gap: 10px;
+    gap: 5px;
 }
 
-.wound-btn {
-    background: rgba(255, 255, 255, 0.9);
-    color: #c94b4b;
-    border: none;
-    width: 35px;
-    height: 35px;
-    border-radius: 50%;
-    font-size: 1.2em;
-    font-weight: bold;
+.wound-checkbox-group {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    justify-content: center;
+}
+
+.wound-checkbox {
+    width: 24px;
+    height: 24px;
     cursor: pointer;
+    accent-color: #ff6b6b;
     transition: all 0.2s;
 }
 
-.wound-btn:hover:not(:disabled) {
-    background: white;
-    transform: scale(1.1);
-}
-
-.wound-btn:disabled {
-    opacity: 0.3;
+.wound-checkbox:disabled {
     cursor: not-allowed;
+    opacity: 0.6;
 }
 
-.wound-count {
-    font-size: 1.5em;
-    font-weight: bold;
-    min-width: 40px;
-    text-align: center;
+.wound-checkbox:not(:disabled):hover {
+    transform: scale(1.15);
+}
+
+.wound-checkbox.assigned-wound {
+    accent-color: #ff4444;
+}
+
+.wound-checkbox.available-wound {
+    accent-color: #ffaa00;
 }
 
 .wound-remaining {
