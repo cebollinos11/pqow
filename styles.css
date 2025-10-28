@@ -42,6 +42,46 @@ body {
     padding: 30px;
     box-shadow: 0 10px 30px rgba(0, 0, 0, 0.7), inset 0 1px 0 rgba(255, 255, 255, 0.1);
     min-height: 600px;
+    display: flex;
+    flex-direction: column;
+}
+
+.game-layout {
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+    height: 100%;
+}
+
+.map-section {
+    background: rgba(0, 0, 0, 0.3);
+    border: 2px solid #8b7355;
+    border-radius: 5px;
+    padding: 20px;
+    flex: 0 0 300px;
+    display: flex;
+    flex-direction: column;
+}
+
+.map-section h2 {
+    margin-top: 0;
+    margin-bottom: 15px;
+}
+
+.map-container {
+    flex: 1;
+    background: rgba(0, 0, 0, 0.5);
+    border: 1px solid #8b7355;
+    border-radius: 3px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    min-height: 250px;
+}
+
+.content-section {
+    flex: 1;
+    overflow-y: auto;
 }
 
 /* ==================== TYPOGRAPHY ==================== */

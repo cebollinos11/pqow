@@ -55,13 +55,24 @@
                 <p>Embark on a perilous journey filled with danger, mystery, and adventure!</p>
                 <button class="start-btn" id="startBtn">Begin Adventure</button>
             </div>
-            
+
             <div id="gameContent" style="display: none;">
-                <h1>Adventure Log</h1>
-                <div id="encounterContainer"></div>
-                <div class="log-container">
-                    <h3>Recent Events</h3>
-                    <div id="logContainer"></div>
+                <div class="game-layout">
+                    <div class="map-section" id="mapSection">
+                        <h2>🗺️ Map</h2>
+                        <div id="mapContainer" class="map-container">
+                            <p style="text-align: center; color: #b8956a; padding: 40px;">Map will be displayed here</p>
+                        </div>
+                    </div>
+
+                    <div class="content-section">
+                        <h1>Adventure Log</h1>
+                        <div id="encounterContainer"></div>
+                        <div class="log-container">
+                            <h3>Recent Events</h3>
+                            <div id="logContainer"></div>
+                        </div>
+                    </div>
                 </div>
             </div>
         </div>
