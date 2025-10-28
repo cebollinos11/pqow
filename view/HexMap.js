@@ -7,13 +7,21 @@ class HexMap {
         this.canvas = document.createElement('canvas');
         this.ctx = this.canvas.getContext('2d');
         this.container.appendChild(this.canvas);
-        
+
         this.hexSize = 40;
         this.width = width;
         this.height = height;
         this.mode = 'view'; // 'view' or 'edit'
         this.playerPos = { col: 0, row: 0 };
-        
+
+        // Zoom and pan properties
+        this.zoom = 1;
+        this.panX = 0;
+        this.panY = 0;
+        this.isPanning = false;
+        this.panStartX = 0;
+        this.panStartY = 0;
+
         this.mapData = {
             width: width,
             height: height,
@@ -21,7 +29,7 @@ class HexMap {
             roads: [],
             rivers: []
         };
-        
+
         this.currentTerrain = 'plains';
         this.currentLocation = null;
         this.isDragging = false;
@@ -82,15 +90,19 @@ class HexMap {
     }
     
     pixelToHex(px, py) {
+        // Account for zoom and pan
+        px = (px - this.panX) / this.zoom;
+        py = (py - this.panY) / this.zoom;
+
         const hexWidth = this.hexSize * 2;
         const hexHeight = Math.sqrt(3) * this.hexSize;
-        
+
         let col = Math.round((px - this.hexSize) / (hexWidth * 0.75));
         let row = Math.round((py - hexHeight * 0.5 - (col % 2) * hexHeight * 0.5) / hexHeight);
-        
+
         col = Math.max(0, Math.min(this.width - 1, col));
         row = Math.max(0, Math.min(this.height - 1, row));
-        
+
         return { col, row };
     }
     
@@ -151,13 +163,23 @@ class HexMap {
     
     draw() {
         this.ctx.clearRect(0, 0, this.canvas.width, this.canvas.height);
-        
+
+        // Save context state
+        this.ctx.save();
+
+        // Apply zoom and pan transformations
+        this.ctx.translate(this.panX, this.panY);
+        this.ctx.scale(this.zoom, this.zoom);
+
         // Draw all hexes
         for (const hex of this.mapData.hexes) {
             const pos = this.hexToPixel(hex.col, hex.row);
             const isPlayerPos = hex.col === this.playerPos.col && hex.row === this.playerPos.row;
             this.drawHex(pos.x, pos.y, hex.terrain, hex.location, isPlayerPos);
         }
+
+        // Restore context state
+        this.ctx.restore();
     }
     
     getHexAt(col, row) {
@@ -207,6 +229,23 @@ class HexMap {
         return this.currentLocation;
     }
 
+    resetZoomAndPan() {
+        this.zoom = 1;
+        this.panX = 0;
+        this.panY = 0;
+        this.draw();
+    }
+
+    zoomIn() {
+        this.zoom = Math.min(3, this.zoom * 1.2);
+        this.draw();
+    }
+
+    zoomOut() {
+        this.zoom = Math.max(0.5, this.zoom / 1.2);
+        this.draw();
+    }
+
     resize(newWidth, newHeight) {
         this.width = newWidth;
         this.height = newHeight;
@@ -239,6 +278,8 @@ class HexMap {
     
     setupEventListeners() {
         this.canvas.addEventListener('click', (e) => {
+            if (this.isPanning) return; // Don't click if we were panning
+
             const rect = this.canvas.getBoundingClientRect();
             const x = e.clientX - rect.left;
             const y = e.clientY - rect.top;
@@ -253,7 +294,19 @@ class HexMap {
         });
 
         this.canvas.addEventListener('mousemove', (e) => {
-            if (this.mode === 'edit' && this.isDragging) {
+            if (this.isPanning) {
+                const rect = this.canvas.getBoundingClientRect();
+                const x = e.clientX - rect.left;
+                const y = e.clientY - rect.top;
+
+                this.panX += x - this.panStartX;
+                this.panY += y - this.panStartY;
+
+                this.panStartX = x;
+                this.panStartY = y;
+
+                this.draw();
+            } else if (this.mode === 'edit' && this.isDragging) {
                 const rect = this.canvas.getBoundingClientRect();
                 const x = e.clientX - rect.left;
                 const y = e.clientY - rect.top;
@@ -264,17 +317,52 @@ class HexMap {
         });
 
         this.canvas.addEventListener('mousedown', (e) => {
-            if (this.mode === 'edit') {
+            if (e.button === 2 || e.ctrlKey) { // Right click or Ctrl+Left click for panning
+                this.isPanning = true;
+                const rect = this.canvas.getBoundingClientRect();
+                this.panStartX = e.clientX - rect.left;
+                this.panStartY = e.clientY - rect.top;
+                e.preventDefault();
+            } else if (this.mode === 'edit') {
                 this.isDragging = true;
             }
         });
 
         this.canvas.addEventListener('mouseup', () => {
             this.isDragging = false;
+            this.isPanning = false;
         });
 
         this.canvas.addEventListener('mouseleave', () => {
             this.isDragging = false;
+            this.isPanning = false;
+        });
+
+        // Zoom with mouse wheel
+        this.canvas.addEventListener('wheel', (e) => {
+            e.preventDefault();
+
+            const rect = this.canvas.getBoundingClientRect();
+            const x = e.clientX - rect.left;
+            const y = e.clientY - rect.top;
+
+            const zoomFactor = e.deltaY > 0 ? 0.9 : 1.1;
+            const oldZoom = this.zoom;
+            this.zoom *= zoomFactor;
+
+            // Clamp zoom between 0.5 and 3
+            this.zoom = Math.max(0.5, Math.min(3, this.zoom));
+
+            // Adjust pan to zoom towards mouse position
+            this.panX = x - (x - this.panX) * (this.zoom / oldZoom);
+            this.panY = y - (y - this.panY) * (this.zoom / oldZoom);
+
+            this.draw();
+        }, { passive: false });
+
+        // Prevent context menu on right click
+        this.canvas.addEventListener('contextmenu', (e) => {
+            e.preventDefault();
         });
     }
 

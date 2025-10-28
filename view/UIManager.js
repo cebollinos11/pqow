@@ -794,6 +794,13 @@ Game.prototype.renderMapEditor = function() {
                 <button class="map-action-btn" id="resizeMapBtn">🔄 Resize</button>
             </div>
 
+            <h3>🔍 View</h3>
+            <div class="map-size-controls">
+                <button class="map-action-btn" id="zoomInBtn">🔍+ Zoom In</button>
+                <button class="map-action-btn" id="zoomOutBtn">🔍- Zoom Out</button>
+                <button class="map-action-btn" id="resetViewBtn">↺ Reset View</button>
+            </div>
+
             <h3>🎨 Terrain</h3>
             <div class="terrain-buttons">
                 ${terrains.map(terrain => `
@@ -832,11 +839,38 @@ Game.prototype.renderMapEditor = function() {
         </div>
     `;
 
-    // Setup resize button listener
+    // Setup button listeners
     setTimeout(() => {
         const resizeBtn = document.getElementById('resizeMapBtn');
         if (resizeBtn) {
             resizeBtn.onclick = () => this.resizeMap();
+        }
+
+        const zoomInBtn = document.getElementById('zoomInBtn');
+        if (zoomInBtn) {
+            zoomInBtn.onclick = () => {
+                if (this.hexMap) {
+                    this.hexMap.zoomIn();
+                }
+            };
+        }
+
+        const zoomOutBtn = document.getElementById('zoomOutBtn');
+        if (zoomOutBtn) {
+            zoomOutBtn.onclick = () => {
+                if (this.hexMap) {
+                    this.hexMap.zoomOut();
+                }
+            };
+        }
+
+        const resetViewBtn = document.getElementById('resetViewBtn');
+        if (resetViewBtn) {
+            resetViewBtn.onclick = () => {
+                if (this.hexMap) {
+                    this.hexMap.resetZoomAndPan();
+                }
+            };
         }
     }, 0);
 };
