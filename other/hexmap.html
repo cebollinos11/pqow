@@ -1,0 +1,993 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Hex Grid Map Editor</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: #2c3e50;
+            color: #ecf0f1;
+            display: flex;
+            height: 100vh;
+            overflow: hidden;
+        }
+        
+        .sidebar {
+            width: 280px;
+            background: #34495e;
+            padding: 20px;
+            overflow-y: auto;
+            box-shadow: 2px 0 10px rgba(0,0,0,0.3);
+        }
+        
+        .main-canvas {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+        }
+        
+        .toolbar {
+            background: #34495e;
+            padding: 15px 20px;
+            display: flex;
+            gap: 10px;
+            align-items: center;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.3);
+            font-size: 13px;
+        }
+        
+        .canvas-container {
+            flex: 1;
+            overflow: auto;
+            background: #1a252f;
+            position: relative;
+        }
+        
+        canvas {
+            display: block;
+            cursor: crosshair;
+        }
+        
+        h2 {
+            margin-bottom: 15px;
+            color: #3498db;
+            font-size: 18px;
+        }
+        
+        h3 {
+            margin: 20px 0 10px 0;
+            color: #ecf0f1;
+            font-size: 14px;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+        
+        .tool-group {
+            margin-bottom: 20px;
+            padding: 15px;
+            background: #2c3e50;
+            border-radius: 5px;
+        }
+        
+        .tool-btn {
+            width: 100%;
+            padding: 10px;
+            margin: 5px 0;
+            border: 2px solid #3498db;
+            background: #2c3e50;
+            color: #ecf0f1;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 14px;
+            transition: all 0.3s;
+        }
+        
+        .tool-btn:hover {
+            background: #3498db;
+            transform: translateY(-2px);
+        }
+        
+        .tool-btn.active {
+            background: #3498db;
+            box-shadow: 0 0 10px rgba(52, 152, 219, 0.5);
+        }
+        
+        .terrain-btn, .location-btn {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        
+        .color-preview {
+            width: 20px;
+            height: 20px;
+            border-radius: 3px;
+            border: 1px solid #ecf0f1;
+        }
+        
+        input[type="number"], input[type="text"] {
+            width: 100%;
+            padding: 8px;
+            margin: 5px 0;
+            background: #2c3e50;
+            border: 1px solid #3498db;
+            color: #ecf0f1;
+            border-radius: 5px;
+            font-size: 14px;
+        }
+        
+        label {
+            display: block;
+            margin-top: 10px;
+            font-size: 13px;
+            color: #bdc3c7;
+        }
+        
+        button {
+            padding: 10px 20px;
+            border: none;
+            background: #27ae60;
+            color: white;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 14px;
+            transition: all 0.3s;
+        }
+        
+        button:hover {
+            background: #2ecc71;
+            transform: translateY(-2px);
+        }
+        
+        .export-btn {
+            background: #e67e22;
+        }
+        
+        .export-btn:hover {
+            background: #f39c12;
+        }
+        
+        .import-btn {
+            background: #9b59b6;
+        }
+        
+        .import-btn:hover {
+            background: #8e44ad;
+        }
+        
+        .new-map-btn {
+            background: #3498db;
+        }
+        
+        .new-map-btn:hover {
+            background: #5dade2;
+        }
+        
+        .path-list {
+            max-height: 200px;
+            overflow-y: auto;
+            margin-top: 10px;
+        }
+        
+        .path-item {
+            padding: 8px;
+            margin: 5px 0;
+            background: #1a252f;
+            border-radius: 3px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            font-size: 12px;
+        }
+        
+        .path-item button {
+            padding: 5px 10px;
+            font-size: 11px;
+            margin-left: 5px;
+        }
+        
+        .path-item.selected {
+            border: 2px solid #3498db;
+        }
+        
+        .delete-btn {
+            background: #e74c3c;
+        }
+        
+        .delete-btn:hover {
+            background: #c0392b;
+        }
+        
+        .road-btn {
+            border-color: #95a5a6;
+        }
+        
+        .road-btn.active {
+            background: #95a5a6;
+        }
+        
+        .river-btn {
+            border-color: #3498db;
+        }
+        
+        .river-btn.active {
+            background: #3498db;
+        }
+    </style>
+</head>
+<body>
+    <div class="sidebar">
+        <h2>🗺️ Hex Map Editor</h2>
+        
+        <div class="tool-group">
+            <h3>New Map</h3>
+            <label>Width (hexes):</label>
+            <input type="number" id="mapWidth" value="15" min="1" max="50">
+            <label>Height (hexes):</label>
+            <input type="number" id="mapHeight" value="10" min="1" max="50">
+            <button class="tool-btn new-map-btn" id="createMapBtn">Create New Map</button>
+        </div>
+        
+        <div class="tool-group">
+            <h3>Terrain Paint</h3>
+            <button class="tool-btn terrain-btn active" data-terrain="plains">
+                <span class="color-preview" style="background: #90EE90;"></span>
+                Plains
+            </button>
+            <button class="tool-btn terrain-btn" data-terrain="forest">
+                <span class="color-preview" style="background: #228B22;"></span>
+                Forest
+            </button>
+            <button class="tool-btn terrain-btn" data-terrain="swamp">
+                <span class="color-preview" style="background: #556B2F;"></span>
+                Swamp
+            </button>
+        </div>
+        
+        <div class="tool-group">
+            <h3>Locations</h3>
+            <button class="tool-btn location-btn" data-location="city">
+                🏰 City
+            </button>
+            <button class="tool-btn location-btn" data-location="ruins">
+                🏛️ Ruins
+            </button>
+            <button class="tool-btn location-btn" data-location="temple">
+                ⛩️ Temple
+            </button>
+            <button class="tool-btn location-btn" data-location="none">
+                ❌ Remove Location
+            </button>
+        </div>
+        
+        <div class="tool-group">
+            <h3>Text Label</h3>
+            <label>Text to add:</label>
+            <input type="text" id="hexText" placeholder="Enter hex label">
+            <button class="tool-btn" id="addTextBtn">Add Text</button>
+            <button class="tool-btn" id="removeTextBtn">Remove Text</button>
+        </div>
+        
+        <div class="tool-group">
+            <h3>Roads & Rivers</h3>
+            <button class="tool-btn road-btn" id="newRoadBtn">🛤️ Start New Road</button>
+            <button class="tool-btn river-btn" id="newRiverBtn">🌊 Start New River</button>
+            <button class="tool-btn" id="finishPathBtn">✓ Finish Current</button>
+            <button class="tool-btn" id="editPathBtn">✏️ Edit Mode</button>
+            <div class="path-list" id="pathList"></div>
+        </div>
+        
+        <div class="tool-group">
+            <h3>Export / Import</h3>
+            <button class="tool-btn export-btn" id="exportJSONBtn">Export as JSON</button>
+            <button class="tool-btn export-btn" id="exportPNGBtn">Export as PNG</button>
+            <button class="tool-btn import-btn" id="importJSONBtn">Import JSON</button>
+            <input type="file" id="fileInput" accept=".json" style="display: none;">
+        </div>
+    </div>
+    
+    <div class="main-canvas">
+        <div class="toolbar">
+            <span id="statusText">Click and drag to paint terrain | Click to add locations/text</span>
+        </div>
+        <div class="canvas-container">
+            <canvas id="hexCanvas"></canvas>
+        </div>
+    </div>
+
+    <script>
+        const canvas = document.getElementById('hexCanvas');
+        const ctx = canvas.getContext('2d');
+        
+        let hexSize = 40;
+        let mapData = {
+            width: 15,
+            height: 10,
+            hexes: [],
+            roads: [],
+            rivers: []
+        };
+        
+        let currentTerrain = 'plains';
+        let currentLocation = null;
+        let textMode = false;
+        let textRemoveMode = false;
+        let isDragging = false;
+        
+        let pathMode = null; // 'road' or 'river'
+        let currentPath = null;
+        let editMode = false;
+        let selectedPath = null;
+        let selectedPointIndex = -1;
+        let draggedPoint = null;
+        
+        const terrainColors = {
+            plains: '#90EE90',
+            forest: '#228B22',
+            swamp: '#556B2F'
+        };
+        
+        // Texture patterns for terrains
+        const terrainTextures = {};
+        
+        function createTerrainTextures() {
+            // Plains texture - grass pattern
+            const plainsCanvas = document.createElement('canvas');
+            plainsCanvas.width = 20;
+            plainsCanvas.height = 20;
+            const plainsCtx = plainsCanvas.getContext('2d');
+            plainsCtx.fillStyle = '#90EE90';
+            plainsCtx.fillRect(0, 0, 20, 20);
+            plainsCtx.strokeStyle = '#7BC87B';
+            plainsCtx.lineWidth = 1;
+            for (let i = 0; i < 10; i++) {
+                const x = Math.random() * 20;
+                const y = Math.random() * 20;
+                plainsCtx.beginPath();
+                plainsCtx.moveTo(x, y);
+                plainsCtx.lineTo(x, y - 3);
+                plainsCtx.stroke();
+            }
+            terrainTextures.plains = ctx.createPattern(plainsCanvas, 'repeat');
+            
+            // Forest texture - tree pattern
+            const forestCanvas = document.createElement('canvas');
+            forestCanvas.width = 30;
+            forestCanvas.height = 30;
+            const forestCtx = forestCanvas.getContext('2d');
+            forestCtx.fillStyle = '#228B22';
+            forestCtx.fillRect(0, 0, 30, 30);
+            forestCtx.fillStyle = '#1a6b1a';
+            for (let i = 0; i < 5; i++) {
+                const x = (i % 2) * 15 + 7;
+                const y = Math.floor(i / 2) * 15 + 7;
+                forestCtx.beginPath();
+                forestCtx.moveTo(x, y - 4);
+                forestCtx.lineTo(x - 3, y + 2);
+                forestCtx.lineTo(x + 3, y + 2);
+                forestCtx.closePath();
+                forestCtx.fill();
+                forestCtx.fillRect(x - 1, y + 2, 2, 3);
+            }
+            terrainTextures.forest = ctx.createPattern(forestCanvas, 'repeat');
+            
+            // Swamp texture - muddy water pattern
+            const swampCanvas = document.createElement('canvas');
+            swampCanvas.width = 25;
+            swampCanvas.height = 25;
+            const swampCtx = swampCanvas.getContext('2d');
+            swampCtx.fillStyle = '#556B2F';
+            swampCtx.fillRect(0, 0, 25, 25);
+            swampCtx.fillStyle = '#4a5f28';
+            for (let i = 0; i < 8; i++) {
+                const x = Math.random() * 25;
+                const y = Math.random() * 25;
+                swampCtx.beginPath();
+                swampCtx.arc(x, y, 2, 0, Math.PI * 2);
+                swampCtx.fill();
+            }
+            swampCtx.strokeStyle = '#3d4f22';
+            swampCtx.lineWidth = 1;
+            for (let i = 0; i < 5; i++) {
+                const x = Math.random() * 25;
+                const y = Math.random() * 25;
+                swampCtx.beginPath();
+                swampCtx.moveTo(x, y);
+                swampCtx.lineTo(x + 3, y - 2);
+                swampCtx.stroke();
+            }
+            terrainTextures.swamp = ctx.createPattern(swampCanvas, 'repeat');
+        }
+        
+        const locationIcons = {
+            city: '🏰',
+            ruins: '🏛️',
+            temple: '⛩️'
+        };
+        
+        function createNewMap() {
+            const width = parseInt(document.getElementById('mapWidth').value);
+            const height = parseInt(document.getElementById('mapHeight').value);
+            
+            mapData = {
+                width: width,
+                height: height,
+                hexes: [],
+                roads: [],
+                rivers: []
+            };
+            
+            for (let row = 0; row < height; row++) {
+                for (let col = 0; col < width; col++) {
+                    mapData.hexes.push({
+                        col: col,
+                        row: row,
+                        terrain: 'plains',
+                        location: null,
+                        text: ''
+                    });
+                }
+            }
+            
+            resizeCanvas();
+            drawMap();
+            updatePathList();
+        }
+        
+        function resizeCanvas() {
+            const hexWidth = hexSize * 2;
+            const hexHeight = Math.sqrt(3) * hexSize;
+            
+            canvas.width = (mapData.width * hexWidth * 0.75) + hexWidth * 0.5;
+            canvas.height = (mapData.height * hexHeight) + hexHeight * 0.5;
+        }
+        
+        function getHexCorners(x, y) {
+            const corners = [];
+            for (let i = 0; i < 6; i++) {
+                const angle = (Math.PI / 3) * i;
+                corners.push({
+                    x: x + hexSize * Math.cos(angle),
+                    y: y + hexSize * Math.sin(angle)
+                });
+            }
+            return corners;
+        }
+        
+        function hexToPixel(col, row) {
+            const hexWidth = hexSize * 2;
+            const hexHeight = Math.sqrt(3) * hexSize;
+            
+            const x = hexWidth * 0.75 * col + hexSize;
+            const y = hexHeight * row + hexHeight * 0.5 + (col % 2) * hexHeight * 0.5;
+            
+            return { x, y };
+        }
+        
+        function pixelToHex(px, py) {
+            const hexWidth = hexSize * 2;
+            const hexHeight = Math.sqrt(3) * hexSize;
+            
+            let col = Math.round((px - hexSize) / (hexWidth * 0.75));
+            let row = Math.round((py - hexHeight * 0.5 - (col % 2) * hexHeight * 0.5) / hexHeight);
+            
+            col = Math.max(0, Math.min(mapData.width - 1, col));
+            row = Math.max(0, Math.min(mapData.height - 1, row));
+            
+            return { col, row };
+        }
+        
+        function drawHexBase(x, y, terrain, location) {
+            const corners = getHexCorners(x, y);
+            
+            ctx.fillStyle = terrainColors[terrain];
+            ctx.beginPath();
+            ctx.moveTo(corners[0].x, corners[0].y);
+            for (let i = 1; i < 6; i++) {
+                ctx.lineTo(corners[i].x, corners[i].y);
+            }
+            ctx.closePath();
+            ctx.fill();
+            
+            ctx.strokeStyle = '#34495e';
+            ctx.lineWidth = 2;
+            ctx.stroke();
+            
+            if (location && locationIcons[location]) {
+                ctx.font = '24px Arial';
+                ctx.textAlign = 'center';
+                ctx.textBaseline = 'middle';
+                ctx.fillText(locationIcons[location], x, y - 5);
+            }
+        }
+        
+        function drawPath(points, color, width) {
+            if (points.length < 2) return;
+            
+            ctx.strokeStyle = color;
+            ctx.lineWidth = width;
+            ctx.lineCap = 'round';
+            ctx.lineJoin = 'round';
+            
+            ctx.beginPath();
+            const firstPos = hexToPixel(points[0].col, points[0].row);
+            ctx.moveTo(firstPos.x, firstPos.y);
+            
+            for (let i = 1; i < points.length; i++) {
+                const pos = hexToPixel(points[i].col, points[i].row);
+                ctx.lineTo(pos.x, pos.y);
+            }
+            
+            ctx.stroke();
+        }
+        
+        function drawPathPoints(points, color) {
+            for (let i = 0; i < points.length; i++) {
+                const pos = hexToPixel(points[i].col, points[i].row);
+                
+                ctx.fillStyle = color;
+                ctx.strokeStyle = '#fff';
+                ctx.lineWidth = 2;
+                ctx.beginPath();
+                ctx.arc(pos.x, pos.y, 6, 0, Math.PI * 2);
+                ctx.fill();
+                ctx.stroke();
+                
+                // Draw point number
+                ctx.fillStyle = '#fff';
+                ctx.font = 'bold 10px Arial';
+                ctx.textAlign = 'center';
+                ctx.textBaseline = 'middle';
+                ctx.fillText((i + 1).toString(), pos.x, pos.y);
+            }
+        }
+        
+        function drawHexText(x, y, text, location) {
+            ctx.font = 'bold 12px Arial';
+            ctx.textAlign = 'center';
+            ctx.textBaseline = 'middle';
+            ctx.fillStyle = '#000';
+            ctx.strokeStyle = '#fff';
+            ctx.lineWidth = 3;
+            ctx.strokeText(text, x, y + (location ? 15 : 0));
+            ctx.fillText(text, x, y + (location ? 15 : 0));
+        }
+        
+        function drawMap() {
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            
+            // First pass: draw terrain and locations
+            for (const hex of mapData.hexes) {
+                const pos = hexToPixel(hex.col, hex.row);
+                drawHexBase(pos.x, pos.y, hex.terrain, hex.location);
+            }
+            
+            // Draw rivers
+            for (const river of mapData.rivers) {
+                drawPath(river.points, '#4A90E2', 8);
+            }
+            
+            // Draw roads
+            for (const road of mapData.roads) {
+                drawPath(road.points, '#8B7355', 6);
+            }
+            
+            // Draw current path being created
+            if (currentPath && currentPath.points.length > 0) {
+                const color = pathMode === 'road' ? '#8B7355' : '#4A90E2';
+                const width = pathMode === 'road' ? 6 : 8;
+                drawPath(currentPath.points, color, width);
+                drawPathPoints(currentPath.points, color);
+            }
+            
+            // Draw selected path in edit mode
+            if (editMode && selectedPath) {
+                const color = selectedPath.type === 'road' ? '#D4A574' : '#6FB1FF';
+                drawPathPoints(selectedPath.points, color);
+            }
+            
+            // Second pass: draw text on top of everything
+            for (const hex of mapData.hexes) {
+                if (hex.text) {
+                    const pos = hexToPixel(hex.col, hex.row);
+                    drawHexText(pos.x, pos.y, hex.text, hex.location);
+                }
+            }
+        }
+        
+        function getHexAt(col, row) {
+            return mapData.hexes.find(h => h.col === col && h.row === row);
+        }
+        
+        function selectTerrain(terrain) {
+            currentTerrain = terrain;
+            currentLocation = null;
+            textMode = false;
+            textRemoveMode = false;
+            pathMode = null;
+            editMode = false;
+            
+            document.querySelectorAll('.terrain-btn').forEach(btn => {
+                btn.classList.remove('active');
+            });
+            document.querySelectorAll('.location-btn').forEach(btn => {
+                btn.classList.remove('active');
+            });
+            
+            document.querySelector(`[data-terrain="${terrain}"]`).classList.add('active');
+            updateStatus('Click and drag to paint terrain');
+        }
+        
+        function selectLocation(location) {
+            currentLocation = location;
+            currentTerrain = null;
+            textMode = false;
+            textRemoveMode = false;
+            pathMode = null;
+            editMode = false;
+            
+            document.querySelectorAll('.terrain-btn').forEach(btn => {
+                btn.classList.remove('active');
+            });
+            document.querySelectorAll('.location-btn').forEach(btn => {
+                btn.classList.remove('active');
+            });
+            
+            document.querySelector(`[data-location="${location}"]`).classList.add('active');
+            updateStatus('Click on hexes to place/remove locations');
+        }
+        
+        function enableTextMode() {
+            textMode = true;
+            textRemoveMode = false;
+            currentTerrain = null;
+            currentLocation = null;
+            pathMode = null;
+            editMode = false;
+            
+            document.querySelectorAll('.terrain-btn, .location-btn').forEach(btn => {
+                btn.classList.remove('active');
+            });
+            updateStatus('Click on hexes to add text labels');
+        }
+        
+        function enableTextRemoveMode() {
+            textRemoveMode = true;
+            textMode = false;
+            currentTerrain = null;
+            currentLocation = null;
+            pathMode = null;
+            editMode = false;
+            
+            document.querySelectorAll('.terrain-btn, .location-btn').forEach(btn => {
+                btn.classList.remove('active');
+            });
+            updateStatus('Click on hexes to remove text labels');
+        }
+        
+        function startNewRoad() {
+            pathMode = 'road';
+            currentPath = { type: 'road', points: [] };
+            editMode = false;
+            selectedPath = null;
+            currentTerrain = null;
+            currentLocation = null;
+            textMode = false;
+            textRemoveMode = false;
+            
+            document.querySelectorAll('.terrain-btn, .location-btn').forEach(btn => {
+                btn.classList.remove('active');
+            });
+            
+            updateStatus('Click on hexes to add road points. Click "Finish Current" when done.');
+            drawMap();
+        }
+        
+        function startNewRiver() {
+            pathMode = 'river';
+            currentPath = { type: 'river', points: [] };
+            editMode = false;
+            selectedPath = null;
+            currentTerrain = null;
+            currentLocation = null;
+            textMode = false;
+            textRemoveMode = false;
+            
+            document.querySelectorAll('.terrain-btn, .location-btn').forEach(btn => {
+                btn.classList.remove('active');
+            });
+            
+            updateStatus('Click on hexes to add river points. Click "Finish Current" when done.');
+            drawMap();
+        }
+        
+        function finishCurrentPath() {
+            if (currentPath && currentPath.points.length >= 2) {
+                if (currentPath.type === 'road') {
+                    mapData.roads.push(currentPath);
+                } else {
+                    mapData.rivers.push(currentPath);
+                }
+                currentPath = null;
+                pathMode = null;
+                updatePathList();
+                updateStatus('Path saved! Start a new road or river, or continue editing.');
+            } else {
+                updateStatus('Need at least 2 points to create a path!');
+            }
+            drawMap();
+        }
+        
+        function toggleEditMode() {
+            editMode = !editMode;
+            if (editMode) {
+                pathMode = null;
+                currentPath = null;
+                currentTerrain = null;
+                currentLocation = null;
+                textMode = false;
+                textRemoveMode = false;
+                selectedPath = null;
+                
+                document.querySelectorAll('.terrain-btn, .location-btn').forEach(btn => {
+                    btn.classList.remove('active');
+                });
+                
+                updateStatus('Edit Mode: Click on a path from the list, then drag points to move them. Right-click a point to delete it.');
+            } else {
+                selectedPath = null;
+                updateStatus('Edit mode disabled');
+            }
+            drawMap();
+        }
+        
+        function deletePath(type, index) {
+            if (type === 'road') {
+                mapData.roads.splice(index, 1);
+            } else {
+                mapData.rivers.splice(index, 1);
+            }
+            if (selectedPath && selectedPath === (type === 'road' ? mapData.roads[index] : mapData.rivers[index])) {
+                selectedPath = null;
+            }
+            updatePathList();
+            drawMap();
+        }
+        
+        function selectPathForEdit(type, index) {
+            if (!editMode) {
+                editMode = true;
+                updateStatus('Edit Mode: Drag points to move them. Right-click a point to delete it.');
+            }
+            
+            selectedPath = type === 'road' ? mapData.roads[index] : mapData.rivers[index];
+            drawMap();
+            updatePathList();
+        }
+        
+        function updatePathList() {
+            const list = document.getElementById('pathList');
+            list.innerHTML = '';
+            
+            mapData.roads.forEach((road, i) => {
+                const item = document.createElement('div');
+                item.className = 'path-item';
+                if (selectedPath === road) item.classList.add('selected');
+                
+                item.innerHTML = `
+                    <span>🛤️ Road ${i + 1} (${road.points.length} pts)</span>
+                    <div>
+                        <button onclick="selectPathForEdit('road', ${i})">Edit</button>
+                        <button class="delete-btn" onclick="deletePath('road', ${i})">Delete</button>
+                    </div>
+                `;
+                list.appendChild(item);
+            });
+            
+            mapData.rivers.forEach((river, i) => {
+                const item = document.createElement('div');
+                item.className = 'path-item';
+                if (selectedPath === river) item.classList.add('selected');
+                
+                item.innerHTML = `
+                    <span>🌊 River ${i + 1} (${river.points.length} pts)</span>
+                    <div>
+                        <button onclick="selectPathForEdit('river', ${i})">Edit</button>
+                        <button class="delete-btn" onclick="deletePath('river', ${i})">Delete</button>
+                    </div>
+                `;
+                list.appendChild(item);
+            });
+        }
+        
+        function updateStatus(text) {
+            document.getElementById('statusText').textContent = text;
+        }
+        
+        function getPointAtPosition(x, y, points) {
+            for (let i = 0; i < points.length; i++) {
+                const pos = hexToPixel(points[i].col, points[i].row);
+                const dist = Math.sqrt((x - pos.x) ** 2 + (y - pos.y) ** 2);
+                if (dist < 10) {
+                    return i;
+                }
+            }
+            return -1;
+        }
+        
+        function handleCanvasClick(e) {
+            const rect = canvas.getBoundingClientRect();
+            const x = e.clientX - rect.left;
+            const y = e.clientY - rect.top;
+            
+            const hexCoord = pixelToHex(x, y);
+            const hex = getHexAt(hexCoord.col, hexCoord.row);
+            
+            if (!hex) return;
+            
+            // Path creation mode
+            if (pathMode && currentPath) {
+                currentPath.points.push({ col: hexCoord.col, row: hexCoord.row });
+                drawMap();
+                return;
+            }
+            
+            // Edit mode - handled by mousedown for dragging
+            if (editMode && selectedPath) {
+                return;
+            }
+            
+            // Normal hex editing
+            if (currentTerrain) {
+                hex.terrain = currentTerrain;
+            } else if (currentLocation) {
+                hex.location = currentLocation === 'none' ? null : currentLocation;
+            } else if (textMode) {
+                const text = document.getElementById('hexText').value;
+                hex.text = text;
+            } else if (textRemoveMode) {
+                hex.text = '';
+            }
+            
+            drawMap();
+        }
+        
+        function exportAsJSON() {
+            const dataStr = JSON.stringify(mapData, null, 2);
+            const dataBlob = new Blob([dataStr], { type: 'application/json' });
+            const url = URL.createObjectURL(dataBlob);
+            const link = document.createElement('a');
+            link.href = url;
+            link.download = 'hex-map.json';
+            link.click();
+            URL.revokeObjectURL(url);
+        }
+        
+        function exportAsPNG() {
+            const link = document.createElement('a');
+            link.download = 'hex-map.png';
+            link.href = canvas.toDataURL('image/png');
+            link.click();
+        }
+        
+        function importJSON(event) {
+            const file = event.target.files[0];
+            if (!file) return;
+            
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                try {
+                    mapData = JSON.parse(e.target.result);
+                    if (!mapData.roads) mapData.roads = [];
+                    if (!mapData.rivers) mapData.rivers = [];
+                    resizeCanvas();
+                    drawMap();
+                    updatePathList();
+                } catch (error) {
+                    alert('Error loading map file: ' + error.message);
+                }
+            };
+            reader.readAsText(file);
+        }
+        
+        // Event Listeners
+        canvas.addEventListener('mousedown', (e) => {
+            const rect = canvas.getBoundingClientRect();
+            const x = e.clientX - rect.left;
+            const y = e.clientY - rect.top;
+            
+            // Check if clicking on a point in edit mode
+            if (editMode && selectedPath) {
+                const pointIndex = getPointAtPosition(x, y, selectedPath.points);
+                if (pointIndex !== -1) {
+                    if (e.button === 2) { // Right click
+                        e.preventDefault();
+                        selectedPath.points.splice(pointIndex, 1);
+                        drawMap();
+                        updatePathList();
+                        return;
+                    } else {
+                        draggedPoint = pointIndex;
+                        return;
+                    }
+                }
+            }
+            
+            isDragging = true;
+            handleCanvasClick(e);
+        });
+        
+        canvas.addEventListener('mousemove', (e) => {
+            const rect = canvas.getBoundingClientRect();
+            const x = e.clientX - rect.left;
+            const y = e.clientY - rect.top;
+            
+            // Dragging a point
+            if (editMode && selectedPath && draggedPoint !== null) {
+                const hexCoord = pixelToHex(x, y);
+                selectedPath.points[draggedPoint] = { col: hexCoord.col, row: hexCoord.row };
+                drawMap();
+                return;
+            }
+            
+            // Normal terrain painting
+            if (isDragging && currentTerrain) {
+                handleCanvasClick(e);
+            }
+        });
+        
+        canvas.addEventListener('mouseup', () => {
+            isDragging = false;
+            draggedPoint = null;
+        });
+        
+        canvas.addEventListener('mouseleave', () => {
+            isDragging = false;
+            draggedPoint = null;
+        });
+        
+        canvas.addEventListener('contextmenu', (e) => {
+            e.preventDefault();
+        });
+        
+        document.getElementById('createMapBtn').addEventListener('click', createNewMap);
+        
+        document.querySelectorAll('.terrain-btn').forEach(btn => {
+            btn.addEventListener('click', () => {
+                selectTerrain(btn.dataset.terrain);
+            });
+        });
+        
+        document.querySelectorAll('.location-btn').forEach(btn => {
+            btn.addEventListener('click', () => {
+                selectLocation(btn.dataset.location);
+            });
+        });
+        
+        document.getElementById('addTextBtn').addEventListener('click', enableTextMode);
+        document.getElementById('removeTextBtn').addEventListener('click', enableTextRemoveMode);
+        document.getElementById('newRoadBtn').addEventListener('click', startNewRoad);
+        document.getElementById('newRiverBtn').addEventListener('click', startNewRiver);
+        document.getElementById('finishPathBtn').addEventListener('click', finishCurrentPath);
+        document.getElementById('editPathBtn').addEventListener('click', toggleEditMode);
+        document.getElementById('exportJSONBtn').addEventListener('click', exportAsJSON);
+        document.getElementById('exportPNGBtn').addEventListener('click', exportAsPNG);
+        document.getElementById('importJSONBtn').addEventListener('click', () => {
+            document.getElementById('fileInput').click();
+        });
+        document.getElementById('fileInput').addEventListener('change', importJSON);
+        
+        // Initialize with default map
+        createNewMap();
+    </script>
+</body>
+</html>
