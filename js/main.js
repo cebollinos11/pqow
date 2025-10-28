@@ -53,6 +53,25 @@ function setupGameButtons() {
     if (woundsBtn) {
         woundsBtn.onclick = () => game.testWounds(3);
     }
+
+    // Map control buttons
+    const mapViewBtn = document.getElementById('mapViewBtn');
+    if (mapViewBtn) {
+        mapViewBtn.style.display = 'block';
+        mapViewBtn.onclick = () => {
+            game.setMapMode('view');
+            game.closeMapEditor();
+        };
+    }
+
+    const mapEditBtn = document.getElementById('mapEditBtn');
+    if (mapEditBtn) {
+        mapEditBtn.style.display = 'block';
+        mapEditBtn.onclick = () => {
+            game.setMapMode('edit');
+            game.openMapEditor();
+        };
+    }
 }
 
 function setupModalListeners() {

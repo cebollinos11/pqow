@@ -3,8 +3,9 @@ class Game {
     constructor() {
         this.state = new GameState();
         this.encounterHistory = [];
+        this.hexMap = null;
     }
-    
+
     startGame() {
         // Initialize player
         this.state.player.addSkill('Combat Training');
@@ -12,10 +13,14 @@ class Game {
         this.state.player.addFood(3);
         this.state.player.addLuck(2);
         this.state.player.addCoins(50);
-        
+
         document.getElementById('startScreen').style.display = 'none';
         document.getElementById('gameContent').style.display = 'block';
-        
+
+        // Initialize hex map
+        this.hexMap = new HexMap('mapContainer', 15, 10);
+        this.hexMap.setMode('view');
+
         // Show sidebar buttons
         document.getElementById('shopBtn').style.display = 'block';
         document.getElementById('inventoryBtn').style.display = 'block';
@@ -23,7 +28,7 @@ class Game {
         document.getElementById('debugItemsBtn').style.display = 'block';
         document.getElementById('encounterBtn').style.display = 'block';
         document.getElementById('woundsBtn').style.display = 'block';
-        
+
         this.state.addLog('🎮 Your adventure begins!', 'success');
         this.nextEncounter();
         this.render();

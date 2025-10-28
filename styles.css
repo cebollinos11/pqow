@@ -77,6 +77,14 @@ body {
     align-items: center;
     justify-content: center;
     min-height: 250px;
+    overflow: auto;
+    position: relative;
+}
+
+.map-container canvas {
+    display: block;
+    cursor: crosshair;
+    background: #1a1a1a;
 }
 
 .content-section {
@@ -939,6 +947,158 @@ h3 {
 .encounter-list-preview {
     color: #b8956a;
     font-size: 0.9em;
+}
+
+/* ==================== MAP EDITOR ==================== */
+.map-with-editor {
+    display: flex;
+    gap: 15px;
+    height: 100%;
+}
+
+.map-container {
+    flex: 1;
+    background: rgba(0, 0, 0, 0.5);
+    border: 1px solid #8b7355;
+    border-radius: 3px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    min-height: 250px;
+    overflow: auto;
+    position: relative;
+}
+
+.map-container canvas {
+    display: block;
+    cursor: crosshair;
+    background: #1a1a1a;
+}
+
+.map-editor-sidebar {
+    width: 280px;
+    background: rgba(0, 0, 0, 0.7);
+    border: 1px solid #8b7355;
+    border-radius: 3px;
+    padding: 15px;
+    overflow-y: auto;
+    max-height: 100%;
+}
+
+.map-editor-panel {
+    padding: 0;
+}
+
+.map-editor-panel h3 {
+    margin-top: 15px;
+    margin-bottom: 12px;
+    color: #d4af37;
+    border-bottom: 2px solid #8b7355;
+    padding-bottom: 8px;
+    font-size: 0.95em;
+}
+
+.map-editor-panel h3:first-child {
+    margin-top: 0;
+}
+
+.terrain-buttons, .location-buttons, .map-actions {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 8px;
+    margin-bottom: 12px;
+}
+
+.map-tool-btn {
+    padding: 10px 12px;
+    border: 2px solid #8b7355;
+    background: rgba(0, 0, 0, 0.3);
+    color: #d4af37;
+    border-radius: 5px;
+    cursor: pointer;
+    font-size: 0.85em;
+    font-weight: bold;
+    transition: all 0.3s;
+    text-align: left;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.map-tool-btn:hover {
+    background: rgba(212, 175, 55, 0.2);
+    border-color: #d4af37;
+    transform: translateX(3px);
+}
+
+.map-tool-btn.active {
+    background: linear-gradient(135deg, #8b7355 0%, #6a5a4a 100%);
+    border-color: #ffff00;
+    box-shadow: 0 0 10px rgba(212, 175, 55, 0.5);
+    color: #ffff00;
+}
+
+.map-action-btn {
+    padding: 10px 12px;
+    border: 2px solid #3498db;
+    background: rgba(52, 152, 219, 0.2);
+    color: #87ceeb;
+    border-radius: 5px;
+    cursor: pointer;
+    font-size: 0.85em;
+    font-weight: bold;
+    transition: all 0.3s;
+    text-align: center;
+}
+
+.map-action-btn:hover {
+    background: rgba(52, 152, 219, 0.4);
+    border-color: #87ceeb;
+    transform: translateY(-2px);
+}
+
+.map-editor-panel p {
+    font-size: 0.8em;
+    color: #b8956a;
+    margin-top: 15px;
+    line-height: 1.4;
+}
+
+.map-size-controls {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    margin-bottom: 15px;
+}
+
+.size-input-group {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.size-input-group label {
+    color: #d4af37;
+    font-size: 0.85em;
+    font-weight: bold;
+    min-width: 50px;
+}
+
+.size-input {
+    flex: 1;
+    padding: 6px 8px;
+    border: 2px solid #8b7355;
+    background: rgba(0, 0, 0, 0.3);
+    color: #d4af37;
+    border-radius: 3px;
+    font-size: 0.85em;
+    font-weight: bold;
+}
+
+.size-input:focus {
+    outline: none;
+    border-color: #d4af37;
+    background: rgba(212, 175, 55, 0.1);
 }
 
 /* ==================== RESPONSIVE ==================== */

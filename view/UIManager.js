@@ -603,3 +603,242 @@ Game.prototype.launchSpecificEncounter = function(encounterId) {
     }
 };
 
+// Map methods
+Game.prototype.setMapMode = function(mode) {
+    if (this.hexMap) {
+        this.hexMap.setMode(mode);
+        this.state.addLog(`🗺️ Map mode: ${mode}`, 'info');
+    }
+};
+
+Game.prototype.setPlayerMapPosition = function(col, row) {
+    if (this.hexMap) {
+        this.hexMap.setPlayerPosition(col, row);
+        this.state.addLog(`📍 Player moved to hex (${col}, ${row})`, 'success');
+    }
+};
+
+Game.prototype.saveMap = function() {
+    if (this.hexMap) {
+        const mapJSON = this.hexMap.exportJSON();
+        const blob = new Blob([mapJSON], { type: 'application/json' });
+        const url = URL.createObjectURL(blob);
+        const link = document.createElement('a');
+        link.href = url;
+        link.download = 'game-map.json';
+        link.click();
+        URL.revokeObjectURL(url);
+        this.state.addLog('💾 Map exported as JSON!', 'success');
+    }
+};
+
+Game.prototype.loadMap = function() {
+    if (this.hexMap) {
+        const input = document.createElement('input');
+        input.type = 'file';
+        input.accept = '.json';
+        input.onchange = (e) => {
+            const file = e.target.files[0];
+            if (file) {
+                const reader = new FileReader();
+                reader.onload = (event) => {
+                    try {
+                        const jsonString = event.target.result;
+                        if (this.hexMap.importJSON(jsonString)) {
+                            this.state.addLog('📂 Map loaded from JSON!', 'success');
+                        } else {
+                            this.state.addLog('❌ Failed to load map', 'danger');
+                        }
+                    } catch (err) {
+                        this.state.addLog('❌ Invalid JSON file', 'danger');
+                    }
+                };
+                reader.readAsText(file);
+            }
+        };
+        input.click();
+    }
+};
+
+Game.prototype.exportMapPNG = function() {
+    if (this.hexMap) {
+        const canvas = this.hexMap.canvas;
+        const link = document.createElement('a');
+        link.href = canvas.toDataURL('image/png');
+        link.download = 'game-map.png';
+        link.click();
+        this.state.addLog('📥 Map exported as PNG!', 'success');
+    }
+};
+
+Game.prototype.resizeMap = function() {
+    try {
+        if (!this.hexMap) {
+            console.log('No hexMap');
+            return;
+        }
+
+        const widthInput = document.getElementById('mapWidthInput');
+        const heightInput = document.getElementById('mapHeightInput');
+
+        console.log('Width input:', widthInput);
+        console.log('Height input:', heightInput);
+
+        if (!widthInput || !heightInput) {
+            console.log('Inputs not found');
+            this.state.addLog('❌ Error: Input fields not found', 'danger');
+            return;
+        }
+
+        const newWidth = parseInt(widthInput.value, 10);
+        const newHeight = parseInt(heightInput.value, 10);
+
+        console.log('New dimensions:', newWidth, newHeight);
+
+        if (isNaN(newWidth) || isNaN(newHeight)) {
+            this.state.addLog('❌ Invalid input values', 'danger');
+            return;
+        }
+
+        if (newWidth < 5 || newWidth > 50 || newHeight < 5 || newHeight > 50) {
+            this.state.addLog('❌ Map size must be between 5 and 50', 'danger');
+            return;
+        }
+
+        console.log('Calling hexMap.resize...');
+        this.hexMap.resize(newWidth, newHeight);
+        this.state.addLog(`🔄 Map resized to ${newWidth}x${newHeight}!`, 'success');
+    } catch (error) {
+        console.error('Error in resizeMap:', error);
+        this.state.addLog('❌ Error resizing map', 'danger');
+    }
+};
+
+Game.prototype.importMap = function(jsonString) {
+    if (this.hexMap) {
+        if (this.hexMap.importJSON(jsonString)) {
+            this.state.addLog('📤 Map imported!', 'success');
+            return true;
+        } else {
+            this.state.addLog('❌ Failed to import map', 'danger');
+            return false;
+        }
+    }
+    return false;
+};
+
+// Map editing methods
+Game.prototype.setMapTerrain = function(terrain) {
+    if (this.hexMap) {
+        this.hexMap.setCurrentTerrain(terrain);
+        this.state.addLog(`🎨 Terrain selected: ${terrain}`, 'info');
+    }
+};
+
+Game.prototype.setMapLocation = function(location) {
+    if (this.hexMap) {
+        this.hexMap.setCurrentLocation(location);
+        this.state.addLog(`📍 Location selected: ${location}`, 'info');
+    }
+};
+
+Game.prototype.openMapEditor = function() {
+    document.getElementById('mapEditorSidebar').style.display = 'block';
+    this.renderMapEditor();
+};
+
+Game.prototype.closeMapEditor = function() {
+    document.getElementById('mapEditorSidebar').style.display = 'none';
+};
+
+Game.prototype.renderMapEditor = function() {
+    const content = document.getElementById('mapEditorContent');
+
+    const terrains = ['plains', 'forest', 'swamp', 'mountain', 'water'];
+    const locations = ['city', 'ruins', 'temple', 'tavern', 'dungeon', 'none'];
+
+    const terrainIcons = {
+        plains: '🌾',
+        forest: '🌲',
+        swamp: '🌿',
+        mountain: '⛰️',
+        water: '💧'
+    };
+
+    const locationIcons = {
+        city: '🏰',
+        ruins: '🏛️',
+        temple: '⛩️',
+        tavern: '🍺',
+        dungeon: '🕳️',
+        none: '❌'
+    };
+
+    const currentTerrain = this.hexMap ? this.hexMap.getCurrentTerrain() : null;
+    const currentLocation = this.hexMap ? this.hexMap.getCurrentLocation() : null;
+    const mapWidth = this.hexMap ? this.hexMap.mapData.width : 15;
+    const mapHeight = this.hexMap ? this.hexMap.mapData.height : 10;
+
+    content.innerHTML = `
+        <div class="map-editor-panel">
+            <h3>📏 Map Size</h3>
+            <div class="map-size-controls">
+                <div class="size-input-group">
+                    <label>Width:</label>
+                    <input type="number" id="mapWidthInput" value="${mapWidth}" min="5" max="50" class="size-input">
+                </div>
+                <div class="size-input-group">
+                    <label>Height:</label>
+                    <input type="number" id="mapHeightInput" value="${mapHeight}" min="5" max="50" class="size-input">
+                </div>
+                <button class="map-action-btn" id="resizeMapBtn">🔄 Resize</button>
+            </div>
+
+            <h3>🎨 Terrain</h3>
+            <div class="terrain-buttons">
+                ${terrains.map(terrain => `
+                    <button class="map-tool-btn terrain-tool ${currentTerrain === terrain ? 'active' : ''}"
+                            data-terrain="${terrain}"
+                            onclick="game.setMapTerrain('${terrain}')">
+                        ${terrainIcons[terrain]} ${terrain.charAt(0).toUpperCase() + terrain.slice(1)}
+                    </button>
+                `).join('')}
+            </div>
+
+            <h3>📍 Locations</h3>
+            <div class="location-buttons">
+                ${locations.map(location => `
+                    <button class="map-tool-btn location-tool ${currentLocation === location ? 'active' : ''}"
+                            data-location="${location}"
+                            onclick="game.setMapLocation('${location}')">
+                        ${locationIcons[location]} ${location.charAt(0).toUpperCase() + location.slice(1)}
+                    </button>
+                `).join('')}
+            </div>
+
+            <h3>💾 Actions</h3>
+            <div class="map-actions">
+                <button class="map-action-btn" onclick="game.saveMap()">💾 Save JSON</button>
+                <button class="map-action-btn" onclick="game.loadMap()">📂 Load JSON</button>
+                <button class="map-action-btn" onclick="game.exportMapPNG()">📥 Export PNG</button>
+            </div>
+
+            <p>
+                <strong>How to use:</strong><br>
+                • Click a tool<br>
+                • Click or drag on map<br>
+                • Click 👁️ View Mode to exit
+            </p>
+        </div>
+    `;
+
+    // Setup resize button listener
+    setTimeout(() => {
+        const resizeBtn = document.getElementById('resizeMapBtn');
+        if (resizeBtn) {
+            resizeBtn.onclick = () => this.resizeMap();
+        }
+    }, 0);
+};
+
+

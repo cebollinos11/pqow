@@ -47,6 +47,10 @@
             <button class="shop-btn" id="debugItemsBtn" style="background: #8b5cf6; display: none;">📦 Give Items & Companion</button>
             <button class="shop-btn" id="encounterBtn" style="background: #6610f2; display: none;">🎭 Launch Encounter</button>
             <button class="shop-btn" id="woundsBtn" style="background: #ff6b6b; display: none;">💔 Test Wounds</button>
+
+            <h3>Map Controls</h3>
+            <button class="shop-btn" id="mapViewBtn" style="background: #17a2b8; display: none;">👁️ Map View Mode</button>
+            <button class="shop-btn" id="mapEditBtn" style="background: #ffc107; display: none;">✏️ Map Edit Mode</button>
         </div>
         
         <div class="main-panel" id="mainPanel">
@@ -60,8 +64,11 @@
                 <div class="game-layout">
                     <div class="map-section" id="mapSection">
                         <h2>🗺️ Map</h2>
-                        <div id="mapContainer" class="map-container">
-                            <p style="text-align: center; color: #b8956a; padding: 40px;">Map will be displayed here</p>
+                        <div class="map-with-editor">
+                            <div id="mapContainer" class="map-container"></div>
+                            <div id="mapEditorSidebar" class="map-editor-sidebar" style="display: none;">
+                                <div id="mapEditorContent"></div>
+                            </div>
                         </div>
                     </div>
 
@@ -132,6 +139,7 @@
     <script src="engine/Game.js"></script>
 
     <!-- View Files -->
+    <script src="view/HexMap.js"></script>
     <script src="view/Renderer.js"></script>
     <script src="view/UIManager.js"></script>
 
