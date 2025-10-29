@@ -603,6 +603,61 @@ Game.prototype.launchSpecificEncounter = function(encounterId) {
     }
 };
 
+// Panel toggle methods
+Game.prototype.toggleEncounterPanel = function() {
+    const panel = document.getElementById('encounterPanel');
+    if (panel) {
+        if (panel.style.display === 'none') {
+            panel.style.display = 'block';
+            this.state.addLog('📜 Encounter panel shown', 'info');
+        } else {
+            panel.style.display = 'none';
+            this.state.addLog('📜 Encounter panel hidden', 'info');
+        }
+    }
+};
+
+Game.prototype.toggleLogPanel = function() {
+    const panel = document.getElementById('logSidebar');
+    if (panel) {
+        if (panel.style.display === 'none') {
+            panel.style.display = 'block';
+            this.state.addLog('📋 Event log shown', 'info');
+        } else {
+            panel.style.display = 'none';
+            this.state.addLog('📋 Event log hidden', 'info');
+        }
+    }
+};
+
+Game.prototype.toggleEncounterCollapse = function() {
+    const panel = document.getElementById('encounterPanel');
+    const btn = document.getElementById('toggleEncounterBtn');
+    if (panel && btn) {
+        if (panel.classList.contains('collapsed')) {
+            panel.classList.remove('collapsed');
+            btn.textContent = '−';
+        } else {
+            panel.classList.add('collapsed');
+            btn.textContent = '+';
+        }
+    }
+};
+
+Game.prototype.toggleLogCollapse = function() {
+    const panel = document.getElementById('logSidebar');
+    const btn = document.getElementById('toggleLogBtn');
+    if (panel && btn) {
+        if (panel.classList.contains('collapsed')) {
+            panel.classList.remove('collapsed');
+            btn.textContent = '−';
+        } else {
+            panel.classList.add('collapsed');
+            btn.textContent = '+';
+        }
+    }
+};
+
 // Map methods
 Game.prototype.setMapMode = function(mode) {
     if (this.hexMap) {

@@ -63,23 +63,40 @@
             <h3>Map Controls</h3>
             <button class="shop-btn" id="mapViewBtn" style="background: #17a2b8; display: none;">👁️ Map View Mode</button>
             <button class="shop-btn" id="mapEditBtn" style="background: #ffc107; display: none;">✏️ Map Edit Mode</button>
+
+            <h3>UI Controls</h3>
+            <button class="shop-btn" id="toggleEncounterPanelBtn" style="background: #28a745; display: none;">📜 Toggle Encounter</button>
+            <button class="shop-btn" id="toggleLogPanelBtn" style="background: #6c757d; display: none;">📋 Toggle Event Log</button>
         </div>
 
-        <!-- Encounters panel - bottom half -->
-        <div class="main-panel" id="mainPanel">
+        <!-- Start screen panel - centered -->
+        <div class="start-panel" id="startPanel">
             <div class="start-screen" id="startScreen">
                 <h1>🗡️ Text RPG Adventure 🗡️</h1>
                 <p>Embark on a perilous journey filled with danger, mystery, and adventure!</p>
                 <button class="start-btn" id="startBtn">Begin Adventure</button>
             </div>
+        </div>
 
-            <div id="gameContent" style="display: none;">
-                <h1>Adventure Log</h1>
+        <!-- Encounters panel - centered -->
+        <div class="encounter-panel" id="encounterPanel" style="display: none;">
+            <div class="panel-header">
+                <h2>Current Encounter</h2>
+                <button class="toggle-panel-btn" id="toggleEncounterBtn">−</button>
+            </div>
+            <div class="panel-content" id="encounterPanelContent">
                 <div id="encounterContainer"></div>
-                <div class="log-container">
-                    <h3>Recent Events</h3>
-                    <div id="logContainer"></div>
-                </div>
+            </div>
+        </div>
+
+        <!-- Event log sidebar - right side -->
+        <div class="log-sidebar" id="logSidebar" style="display: none;">
+            <div class="panel-header">
+                <h2>Event Log</h2>
+                <button class="toggle-panel-btn" id="toggleLogBtn">−</button>
+            </div>
+            <div class="panel-content" id="logPanelContent">
+                <div id="logContainer"></div>
             </div>
         </div>
     </div>

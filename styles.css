@@ -72,32 +72,122 @@ body {
     max-height: calc(100vh - 40px);
 }
 
-/* Encounters panel - bottom half */
-.main-panel {
+/* Start panel - centered */
+.start-panel {
     position: fixed;
-    left: 320px;
-    bottom: 20px;
-    right: 20px;
-    height: calc(50vh - 30px);
+    left: 50%;
+    top: 50%;
+    transform: translate(-50%, -50%);
     z-index: 10;
     background: linear-gradient(135deg, rgba(61, 40, 23, 0.95) 0%, rgba(45, 27, 46, 0.95) 100%);
     border: 3px solid #8b7355;
     border-radius: 5px;
-    padding: 20px;
+    padding: 30px;
     box-shadow: 0 10px 30px rgba(0, 0, 0, 0.7), inset 0 1px 0 rgba(255, 255, 255, 0.1);
-    overflow-y: auto;
+    width: 600px;
+    max-width: 90vw;
 }
 
-/* When showing start screen, center it and expand panel */
-.main-panel:has(.start-screen:not([style*="display: none"])) {
+/* Encounter panel - centered */
+.encounter-panel {
+    position: fixed;
     left: 50%;
     top: 50%;
     transform: translate(-50%, -50%);
-    bottom: auto;
-    right: auto;
-    width: 600px;
+    z-index: 20;
+    background: linear-gradient(135deg, rgba(61, 40, 23, 0.98) 0%, rgba(45, 27, 46, 0.98) 100%);
+    border: 3px solid #8b7355;
+    border-radius: 5px;
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.7), inset 0 1px 0 rgba(255, 255, 255, 0.1);
+    width: 700px;
     max-width: 90vw;
+    max-height: 80vh;
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
+}
+
+.encounter-panel.collapsed .panel-content {
+    display: none;
+}
+
+.encounter-panel.collapsed {
+    max-height: none;
     height: auto;
+}
+
+/* Event log sidebar - right side */
+.log-sidebar {
+    position: fixed;
+    right: 20px;
+    top: 20px;
+    bottom: 20px;
+    width: 300px;
+    z-index: 15;
+    background: linear-gradient(135deg, rgba(61, 40, 23, 0.95) 0%, rgba(45, 27, 46, 0.95) 100%);
+    border: 3px solid #8b7355;
+    border-radius: 5px;
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.7), inset 0 1px 0 rgba(255, 255, 255, 0.1);
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
+}
+
+.log-sidebar.collapsed .panel-content {
+    display: none;
+}
+
+.log-sidebar.collapsed {
+    height: auto;
+    bottom: auto;
+}
+
+/* Panel header styles */
+.panel-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 15px 20px;
+    border-bottom: 2px solid #8b7355;
+    background: rgba(0, 0, 0, 0.2);
+}
+
+.panel-header h2 {
+    margin: 0;
+    padding: 0;
+    border: none;
+    font-size: 1.2em;
+}
+
+.toggle-panel-btn {
+    background: rgba(139, 115, 85, 0.5);
+    border: 2px solid #8b7355;
+    color: #d4af37;
+    font-size: 1.5em;
+    font-weight: bold;
+    width: 35px;
+    height: 35px;
+    border-radius: 3px;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.3s;
+    padding: 0;
+    line-height: 1;
+}
+
+.toggle-panel-btn:hover {
+    background: rgba(139, 115, 85, 0.8);
+    border-color: #d4af37;
+    box-shadow: 0 0 10px rgba(212, 175, 55, 0.5);
+}
+
+/* Panel content styles */
+.panel-content {
+    flex: 1;
+    overflow-y: auto;
+    padding: 20px;
 }
 
 .game-layout {
@@ -1130,11 +1220,22 @@ h3 {
         font-size: 0.85em;
     }
 
-    .main-panel {
-        left: 10px;
+    .log-sidebar {
+        width: 200px;
         right: 10px;
-        bottom: 10px;
-        height: calc(55vh - 20px);
+        top: 10px;
+        bottom: auto;
+        max-height: 40vh;
+        font-size: 0.85em;
+    }
+
+    .encounter-panel {
+        width: 90vw;
+        max-height: 70vh;
+    }
+
+    .start-panel {
+        width: 90vw;
     }
 }
 
@@ -1145,8 +1246,19 @@ h3 {
         font-size: 0.75em;
     }
 
-    .main-panel {
-        padding: 15px;
+    .log-sidebar {
+        width: 150px;
+        padding: 10px;
+        font-size: 0.75em;
+    }
+
+    .encounter-panel {
+        width: 95vw;
+        padding: 10px;
+    }
+
+    .panel-content {
+        padding: 10px;
     }
 }
 

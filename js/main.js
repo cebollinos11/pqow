@@ -72,6 +72,36 @@ function setupGameButtons() {
             game.openMapEditor();
         };
     }
+
+    // UI toggle buttons
+    const toggleEncounterPanelBtn = document.getElementById('toggleEncounterPanelBtn');
+    if (toggleEncounterPanelBtn) {
+        toggleEncounterPanelBtn.onclick = () => {
+            game.toggleEncounterPanel();
+        };
+    }
+
+    const toggleLogPanelBtn = document.getElementById('toggleLogPanelBtn');
+    if (toggleLogPanelBtn) {
+        toggleLogPanelBtn.onclick = () => {
+            game.toggleLogPanel();
+        };
+    }
+
+    // Panel header toggle buttons
+    const toggleEncounterBtn = document.getElementById('toggleEncounterBtn');
+    if (toggleEncounterBtn) {
+        toggleEncounterBtn.onclick = () => {
+            game.toggleEncounterCollapse();
+        };
+    }
+
+    const toggleLogBtn = document.getElementById('toggleLogBtn');
+    if (toggleLogBtn) {
+        toggleLogBtn.onclick = () => {
+            game.toggleLogCollapse();
+        };
+    }
 }
 
 function setupModalListeners() {

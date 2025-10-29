@@ -14,10 +14,12 @@ class Game {
         this.state.player.addLuck(2);
         this.state.player.addCoins(50);
 
-        document.getElementById('startScreen').style.display = 'none';
-        document.getElementById('gameContent').style.display = 'block';
+        // Hide start panel, show game panels
+        document.getElementById('startPanel').style.display = 'none';
         document.getElementById('mapSection').style.display = 'block';
         document.getElementById('sidebar').style.display = 'block';
+        document.getElementById('encounterPanel').style.display = 'block';
+        document.getElementById('logSidebar').style.display = 'block';
 
         // Initialize hex map
         this.hexMap = new HexMap('mapContainer', 15, 10);
@@ -30,6 +32,8 @@ class Game {
         document.getElementById('debugItemsBtn').style.display = 'block';
         document.getElementById('encounterBtn').style.display = 'block';
         document.getElementById('woundsBtn').style.display = 'block';
+        document.getElementById('toggleEncounterPanelBtn').style.display = 'block';
+        document.getElementById('toggleLogPanelBtn').style.display = 'block';
 
         this.state.addLog('🎮 Your adventure begins!', 'success');
         this.nextEncounter();
