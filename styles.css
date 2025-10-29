@@ -92,8 +92,8 @@ body {
 .encounter-panel {
     position: fixed;
     left: 50%;
-    top: 50%;
-    transform: translate(-50%, -50%);
+    bottom: 0%;
+    transform: translate(-50%, -5%);
     z-index: 20;
     background: linear-gradient(135deg, rgba(61, 40, 23, 0.98) 0%, rgba(45, 27, 46, 0.98) 100%);
     border: 3px solid #8b7355;
