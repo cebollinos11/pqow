@@ -75,18 +75,13 @@ Game.prototype.renderDiceResult = function(container) {
     const panel = document.createElement('div');
     panel.className = 'dice-result-panel';
     panel.innerHTML = `
-        <div class="dice-result-title">🎲 Dice Roll Result 🎲</div>
-        ${skill ? `<div style="font-size: 1.1em; margin-bottom: 10px;">Skill Check: ${skill}</div>` : ''}
-        <div class="dice-roll-display">🎲 ${roll}</div>
-        <div class="dice-calculation">
-            ${roll} (roll) ${bonus > 0 ? `+ ${bonus} (bonus)` : ''} - ${difficulty} (difficulty) = ${result}
-        </div>
-        <div class="dice-outcome ${outcome}">
-            ${outcomeText[outcome]}
+        <div class="dice-result-title">
+            🎲 ${skill ? `${skill} ` : ''}Roll: ${roll} ${bonus > 0 ? `+ ${bonus}` : ''} - ${difficulty} = ${result} 🎲
+            <span class="dice-outcome-inline ${outcome}">${outcomeText[outcome]}</span>
         </div>
         <button class="continue-btn" id="continueBtn">Continue →</button>
     `;
-    
+
     container.appendChild(panel);
     
     // Add event listener to continue button
@@ -107,14 +102,9 @@ Game.prototype.renderCompletedDiceResult = function(container, skill, rollResult
     const panel = document.createElement('div');
     panel.className = 'dice-result-panel';
     panel.innerHTML = `
-        <div class="dice-result-title">🎲 Dice Roll Result 🎲</div>
-        ${skill ? `<div style="font-size: 1.1em; margin-bottom: 10px;">Skill Check: ${skill}</div>` : ''}
-        <div class="dice-roll-display">🎲 ${roll}</div>
-        <div class="dice-calculation">
-            ${roll} (roll) ${bonus > 0 ? `+ ${bonus} (bonus)` : ''} - ${difficulty} (difficulty) = ${result}
-        </div>
-        <div class="dice-outcome ${outcome}">
-            ${outcomeText[outcome]}
+        <div class="dice-result-title">
+            🎲 ${skill ? `${skill} ` : ''}Roll: ${roll} ${bonus > 0 ? `+ ${bonus}` : ''} - ${difficulty} = ${result} 🎲
+            <span class="dice-outcome-inline ${outcome}">${outcomeText[outcome]}</span>
         </div>
     `;
 
