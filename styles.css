@@ -371,16 +371,19 @@ h3 {
     border-radius: 3px;
     cursor: pointer;
     font-size: 1em;
-    text-align: left;
+    text-align: center;
     transition: all 0.3s;
     text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.8);
+    flex: 1 1 auto;
+    min-width: 150px;
+    max-width: 300px;
 }
 
 .option-btn:hover {
     background: linear-gradient(135deg, #a89968 0%, #8b7355 100%);
     border-color: #d4af37;
-    transform: translateX(5px);
-    box-shadow: 0 0 10px rgba(212, 175, 55, 0.4);
+    transform: translateY(-3px);
+    box-shadow: 0 4px 15px rgba(212, 175, 55, 0.4);
 }
 
 .option-btn:disabled {
@@ -472,8 +475,10 @@ h3 {
 
 .options-container {
     display: flex;
-    flex-direction: column;
+    flex-direction: row;
+    flex-wrap: wrap;
     gap: 10px;
+    justify-content: center;
 }
 
 .start-screen {
