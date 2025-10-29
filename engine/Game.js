@@ -58,6 +58,7 @@ class Game {
 
         this.state.currentEncounter = encounter;
         this.state.selectedOption = null; // Clear selected option for new encounter
+        this.state.completedRolls = []; // Clear completed rolls for new encounter
         this.render();
     }
     
@@ -87,6 +88,12 @@ class Game {
     continueAfterRoll() {
         if (!this.state.rollResult || !this.state.rollCallback) return;
 
+        // Save the completed roll to history
+        this.state.completedRolls.push({
+            skill: this.state.pendingRoll.skill,
+            rollResult: { ...this.state.rollResult }
+        });
+
         // Save the callback and outcome before clearing state
         const callback = this.state.rollCallback;
         const outcome = this.state.rollResult.outcome;
@@ -101,7 +108,7 @@ class Game {
         const continueBtn = document.getElementById('continueBtn');
         if (continueBtn) {
             continueBtn.remove();
-         }   
+         }
         // Execute the callback with the outcome (this will add encounter info)
         callback(outcome);
 

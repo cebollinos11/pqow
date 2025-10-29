@@ -27,7 +27,12 @@ Game.prototype.renderEncounter = function() {
         container.appendChild(selectedDiv);
     }
 
-    // Show dice result panel if we're showing roll results
+    // Show all completed dice rolls
+    this.state.completedRolls.forEach(completedRoll => {
+        this.renderCompletedDiceResult(container, completedRoll.skill, completedRoll.rollResult);
+    });
+
+    // Show current dice result panel if we're showing roll results
     if (this.state.showingRollResult && this.state.rollResult) {
         this.renderDiceResult(container);
         return;
@@ -88,6 +93,32 @@ Game.prototype.renderDiceResult = function(container) {
     document.getElementById('continueBtn').addEventListener('click', () => {
         this.continueAfterRoll();
     });
+};
+
+Game.prototype.renderCompletedDiceResult = function(container, skill, rollResult) {
+    const { roll, bonus, difficulty, result, outcome } = rollResult;
+
+    const outcomeText = {
+        'GS': '✨ GREAT SUCCESS! ✨',
+        'MS': '⚠️ Medium Success ⚠️',
+        'BS': '❌ Bad Success ❌'
+    };
+
+    const panel = document.createElement('div');
+    panel.className = 'dice-result-panel';
+    panel.innerHTML = `
+        <div class="dice-result-title">🎲 Dice Roll Result 🎲</div>
+        ${skill ? `<div style="font-size: 1.1em; margin-bottom: 10px;">Skill Check: ${skill}</div>` : ''}
+        <div class="dice-roll-display">🎲 ${roll}</div>
+        <div class="dice-calculation">
+            ${roll} (roll) ${bonus > 0 ? `+ ${bonus} (bonus)` : ''} - ${difficulty} (difficulty) = ${result}
+        </div>
+        <div class="dice-outcome ${outcome}">
+            ${outcomeText[outcome]}
+        </div>
+    `;
+
+    container.appendChild(panel);
 };
 
 Game.prototype.renderLuckPrompt = function() {

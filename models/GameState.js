@@ -7,6 +7,7 @@ class GameState {
         this.log = [];
         this.currentEncounter = null;
         this.selectedOption = null; // Track which option was selected
+        this.completedRolls = []; // Track completed dice rolls for this encounter
         this.pendingRoll = null;
         this.showingRollResult = false;
         this.pendingWounds = null;
