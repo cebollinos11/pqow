@@ -85,17 +85,29 @@ class Game {
     
     continueAfterRoll() {
         if (!this.state.rollResult || !this.state.rollCallback) return;
-        
-        // Execute the callback with the outcome
-        this.state.rollCallback(this.state.rollResult.outcome);
-        
+
+        // Save the callback and outcome before clearing state
+        const callback = this.state.rollCallback;
+        const outcome = this.state.rollResult.outcome;
+
         // Clear the roll state
         this.state.pendingRoll = null;
         this.state.rollResult = null;
         this.state.rollCallback = null;
         this.state.showingRollResult = false;
-        
-        this.render();
+
+        // Clear the encounter container to remove dice result panel
+        const container = document.getElementById('encounterContainer');
+        if (container) {
+            container.innerHTML = '';
+        }
+
+        // Execute the callback with the outcome (this will add encounter info)
+        callback(outcome);
+
+        // Update stats and log (but not encounter - callback handles that)
+        this.renderStats();
+        this.renderLog();
     }
     
     checkGameOver() {
@@ -110,8 +122,8 @@ class Game {
         // If no companions, just apply to player directly
         if (this.state.companions.length === 0) {
             this.state.player.takeWounds(amount);
+            this.renderStats(); // Only update stats, don't re-render encounter
             if (callback) callback();
-            this.render();
             return;
         }
 
@@ -196,7 +208,9 @@ class Game {
         this.state.woundCallback = null;
         this.state.woundDistribution = {};
 
-        this.render();
+        // Update stats but don't re-render encounter (callback will handle that)
+        this.renderStats();
+        this.renderLog();
 
         // If any companions died, open inventory for looting
         if (deadCompanionIndices.length > 0) {

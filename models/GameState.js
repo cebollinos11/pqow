@@ -27,6 +27,39 @@ class GameState {
         this.log.unshift({ message, type, timestamp: Date.now() });
         if (this.log.length > 20) this.log.pop();
     }
+
+    addEncounterInfo(message, type = 'info', callback = null) {
+        // Add to log
+        this.addLog(message, type);
+
+        // Add to encounter panel with continue button
+        const container = document.getElementById('encounterContainer');
+        if (container) {
+            const infoDiv = document.createElement('div');
+            infoDiv.className = `encounter-info encounter-info-${type}`;
+            infoDiv.textContent = message;
+            container.appendChild(infoDiv);
+
+            // Add continue button
+            const continueBtn = document.createElement('button');
+            continueBtn.className = 'continue-btn';
+            continueBtn.textContent = '▶ Continue';
+            continueBtn.addEventListener('click', () => {
+                // Remove the info and button
+                infoDiv.remove();
+                continueBtn.remove();
+
+                // Execute callback if provided
+                if (callback) {
+                    callback();
+                }
+            });
+            container.appendChild(continueBtn);
+        } else if (callback) {
+            // If no container, just execute callback immediately
+            callback();
+        }
+    }
     
     roll(difficulty, skill = null, useLuck = false) {
         const d20 = Math.floor(Math.random() * 20) + 1;

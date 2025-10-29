@@ -10,22 +10,23 @@ const ENCOUNTERS = [
                     const bear = new Character('Bear Companion', 3, 3, 1);
                     bear.addSkill('Combat Training');
                     game.state.addCompanion(bear);
-                    game.state.addLog('🐻 The bear nuzzles you gently and joins your party!', 'success');
+                    game.state.addEncounterInfo('🐻 The bear nuzzles you gently and joins your party!', 'success', () => game.nextEncounter());
                 },
                 'MS': (game) => {
                     game.distributeWounds(1, () => {
-                        game.state.addLog('🐻 The bear swipes at you before running away.', 'warning');
+                        game.state.addEncounterInfo('🐻 The bear swipes at you before running away.', 'warning', () => game.nextEncounter());
                     });
                 },
                 'BS': (game) => {
                     game.distributeWounds(1, () => {
-                        game.state.addLog('🐻 The bear attacks! You must fight!', 'danger');
-                        Actions.genericFight(16, 'Combat Training')(game);
+                        game.state.addEncounterInfo('🐻 The bear attacks! You must fight!', 'danger', () => {
+                            Actions.genericFight(16, 'Combat Training')(game);
+                        });
                     });
                 }
             })),
             new EncounterOption('🏃 Run away', Actions.direct((game) => {
-                game.state.addLog('You flee from the bear and continue on your journey.', 'info');
+                game.state.addEncounterInfo('You flee from the bear and continue on your journey.', 'info', () => game.nextEncounter());
             }))
         ]
     ),
@@ -38,9 +39,9 @@ const ENCOUNTERS = [
                 if (game.state.player.luck > 0) {
                     game.state.player.useLuck();
                     game.state.player.addFood(3);
-                    game.state.addLog('Purchased 3 food for 1 luck.', 'success');
+                    game.state.addEncounterInfo('Purchased 3 food for 1 luck.', 'success', () => game.nextEncounter());
                 } else {
-                    game.state.addLog('Not enough luck!', 'danger');
+                    game.state.addEncounterInfo('Not enough luck!', 'danger', () => game.nextEncounter());
                 }
             })),
             new EncounterOption('🗡️ Rob the merchant', Actions.skillCheck(15, 'Pickpocketing', {
@@ -48,20 +49,20 @@ const ENCOUNTERS = [
                     game.state.player.addFood(2);
                     game.state.player.addLuck(1);
                     game.state.player.addToInventory('Stolen Goods');
-                    game.state.addLog('Successfully robbed the merchant! Gained food, luck, and items.', 'success');
+                    game.state.addEncounterInfo('Successfully robbed the merchant! Gained food, luck, and items.', 'success', () => game.nextEncounter());
                 },
                 'MS': (game) => {
                     game.state.player.addFood(1);
-                    game.state.addLog('You got some food, but the merchant noticed you!', 'warning');
+                    game.state.addEncounterInfo('You got some food, but the merchant noticed you!', 'warning', () => game.nextEncounter());
                 },
                 'BS': (game) => {
                     game.distributeWounds(2, () => {
-                        game.state.addLog('The merchant\'s guards caught you!', 'danger');
+                        game.state.addEncounterInfo('The merchant\'s guards caught you!', 'danger', () => game.nextEncounter());
                     });
                 }
             })),
             new EncounterOption('👋 Leave peacefully', Actions.direct((game) => {
-                game.state.addLog('You wave goodbye to the merchant.', 'info');
+                game.state.addEncounterInfo('You wave goodbye to the merchant.', 'info', () => game.nextEncounter());
             }))
         ]
     ),
@@ -74,15 +75,15 @@ const ENCOUNTERS = [
                 'GS': (game) => {
                     game.state.player.addLuck(2);
                     game.state.player.addToInventory('Golden Coin');
-                    game.state.addLog('Successfully picked the lock! Found luck and treasure!', 'success');
+                    game.state.addEncounterInfo('Successfully picked the lock! Found luck and treasure!', 'success', () => game.nextEncounter());
                 },
                 'MS': (game) => {
                     game.state.player.addLuck(1);
-                    game.state.addLog('You managed to open it, but your lockpick broke.', 'warning');
+                    game.state.addEncounterInfo('You managed to open it, but your lockpick broke.', 'warning', () => game.nextEncounter());
                 },
                 'BS': (game) => {
                     game.distributeWounds(1, () => {
-                        game.state.addLog('The chest was trapped! It exploded.', 'danger');
+                        game.state.addEncounterInfo('The chest was trapped! It exploded.', 'danger', () => game.nextEncounter());
                     });
                 }
             })),
@@ -90,15 +91,15 @@ const ENCOUNTERS = [
                 const outcome = Math.random();
                 if (outcome > 0.5) {
                     game.state.player.addToInventory('Broken Treasure');
-                    game.state.addLog('You smashed it open and found some broken items.', 'warning');
+                    game.state.addEncounterInfo('You smashed it open and found some broken items.', 'warning', () => game.nextEncounter());
                 } else {
                     game.distributeWounds(1, () => {
-                        game.state.addLog('The chest was too sturdy. You hurt yourself.', 'danger');
+                        game.state.addEncounterInfo('The chest was too sturdy. You hurt yourself.', 'danger', () => game.nextEncounter());
                     });
                 }
             })),
             new EncounterOption('🚶 Leave it', Actions.direct((game) => {
-                game.state.addLog('You decide not to risk it and continue on.', 'info');
+                game.state.addEncounterInfo('You decide not to risk it and continue on.', 'info', () => game.nextEncounter());
             }))
         ]
     ),
@@ -111,23 +112,25 @@ const ENCOUNTERS = [
             new EncounterOption('💰 Give 2 food', Actions.direct((game) => {
                 if (game.state.player.food >= 2) {
                     game.state.player.removeFood(2);
-                    game.state.addLog('You gave the bandit food and he let you pass.', 'warning');
+                    game.state.addEncounterInfo('You gave the bandit food and he let you pass.', 'warning', () => game.nextEncounter());
                 } else {
-                    game.state.addLog('You don\'t have enough food! The bandit attacks!', 'danger');
-                    Actions.genericFight(14, 'Combat Training')(game);
+                    game.state.addEncounterInfo('You don\'t have enough food! The bandit attacks!', 'danger', () => {
+                        Actions.genericFight(14, 'Combat Training')(game);
+                    });
                 }
             })),
             new EncounterOption('🗣️ Persuade them', Actions.skillCheck(13, 'Charisma', {
                 'GS': (game) => {
                     game.state.player.addLuck(1);
-                    game.state.addLog('You convinced the bandit to join a better path. They gave you a token of thanks!', 'success');
+                    game.state.addEncounterInfo('You convinced the bandit to join a better path. They gave you a token of thanks!', 'success', () => game.nextEncounter());
                 },
                 'MS': (game) => {
-                    game.state.addLog('The bandit lets you go, but keeps your supplies.', 'warning');
+                    game.state.addEncounterInfo('The bandit lets you go, but keeps your supplies.', 'warning', () => game.nextEncounter());
                 },
                 'BS': (game) => {
-                    game.state.addLog('Your words angered the bandit!', 'danger');
-                    Actions.genericFight(14, 'Combat Training')(game);
+                    game.state.addEncounterInfo('Your words angered the bandit!', 'danger', () => {
+                        Actions.genericFight(14, 'Combat Training')(game);
+                    });
                 }
             }))
         ]
@@ -139,14 +142,14 @@ const ENCOUNTERS = [
         [
             new EncounterOption('💧 Drink from the spring', Actions.direct((game) => {
                 game.state.player.healWounds(2);
-                game.state.addLog('The spring heals 2 wounds!', 'success');
+                game.state.addEncounterInfo('The spring heals 2 wounds!', 'success', () => game.nextEncounter());
             })),
             new EncounterOption('🍼 Fill your waterskin', Actions.direct((game) => {
                 game.state.player.addToInventory('Healing Water');
-                game.state.addLog('You fill a container with healing water.', 'success');
+                game.state.addEncounterInfo('You fill a container with healing water.', 'success', () => game.nextEncounter());
             })),
             new EncounterOption('🚶 Move on', Actions.direct((game) => {
-                game.state.addLog('You continue your journey.', 'info');
+                game.state.addEncounterInfo('You continue your journey.', 'info', () => game.nextEncounter());
             }))
         ]
     ),
@@ -160,17 +163,17 @@ const ENCOUNTERS = [
                 if (availableSkills.length > 0 && game.state.player.skills.length < 6) {
                     const randomSkill = availableSkills[Math.floor(Math.random() * availableSkills.length)];
                     game.state.player.addSkill(randomSkill);
-                    game.state.addLog(`You learned ${randomSkill}!`, 'success');
+                    game.state.addEncounterInfo(`You learned ${randomSkill}!`, 'success', () => game.nextEncounter());
                 } else {
-                    game.state.addLog('You already know too many skills.', 'warning');
+                    game.state.addEncounterInfo('You already know too many skills.', 'warning', () => game.nextEncounter());
                 }
             })),
             new EncounterOption('✨ Receive luck', Actions.direct((game) => {
                 game.state.player.addLuck(2);
-                game.state.addLog('The stranger blessed you with 2 luck!', 'success');
+                game.state.addEncounterInfo('The stranger blessed you with 2 luck!', 'success', () => game.nextEncounter());
             })),
             new EncounterOption('❌ Refuse', Actions.direct((game) => {
-                game.state.addLog('You politely decline and move on.', 'info');
+                game.state.addEncounterInfo('You politely decline and move on.', 'info', () => game.nextEncounter());
             }))
         ]
     )

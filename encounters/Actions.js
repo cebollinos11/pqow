@@ -7,20 +7,23 @@ const Actions = {
                 skill,
                 onResult: (outcome) => {
                     if (outcome === 'GS') {
-                        game.state.addLog('⚔️ Victory! You defeated your enemy!', 'success');
-                        game.checkGameOver();
-                        game.nextEncounter();
-                    } else if (outcome === 'MS') {
-                        game.distributeWounds(1, () => {
-                            game.state.addLog('⚔️ Victory, but wounds were taken in the fight.', 'warning');
+                        game.state.addEncounterInfo('⚔️ Victory! You defeated your enemy!', 'success', () => {
                             game.checkGameOver();
                             game.nextEncounter();
                         });
+                    } else if (outcome === 'MS') {
+                        game.distributeWounds(1, () => {
+                            game.state.addEncounterInfo('⚔️ Victory, but wounds were taken in the fight.', 'warning', () => {
+                                game.checkGameOver();
+                                game.nextEncounter();
+                            });
+                        });
                     } else {
                         game.distributeWounds(3, () => {
-                            game.state.addLog('⚔️ Victory, but heavy wounds were taken in the brutal fight!', 'danger');
-                            game.checkGameOver();
-                            game.nextEncounter();
+                            game.state.addEncounterInfo('⚔️ Victory, but heavy wounds were taken in the brutal fight!', 'danger', () => {
+                                game.checkGameOver();
+                                game.nextEncounter();
+                            });
                         });
                     }
                 }
@@ -38,8 +41,7 @@ const Actions = {
                     if (outcomes[outcome]) {
                         outcomes[outcome](game);
                     }
-                    game.checkGameOver();
-                    game.nextEncounter();
+                    // Don't call nextEncounter here - let the outcome callback handle it via addEncounterInfo
                 }
             };
             game.promptForLuck();
@@ -49,7 +51,7 @@ const Actions = {
     direct: (callback) => {
         return (game) => {
             callback(game);
-            game.nextEncounter();
+            // Don't call nextEncounter here - let the callback handle it via addEncounterInfo
         };
     }
 };

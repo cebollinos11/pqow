@@ -385,6 +385,73 @@ h3 {
     text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.8);
 }
 
+.encounter-info {
+    background: rgba(0, 0, 0, 0.4);
+    padding: 15px 20px;
+    border-radius: 3px;
+    margin-bottom: 15px;
+    line-height: 1.6;
+    border-left: 4px solid #8b7355;
+    color: #d4af37;
+    text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.8);
+    animation: slideIn 0.3s ease-out;
+}
+
+.encounter-info-success {
+    border-left-color: #28a745;
+    background: rgba(40, 167, 69, 0.2);
+}
+
+.encounter-info-warning {
+    border-left-color: #ffc107;
+    background: rgba(255, 193, 7, 0.2);
+}
+
+.encounter-info-danger {
+    border-left-color: #dc3545;
+    background: rgba(220, 53, 69, 0.2);
+}
+
+.encounter-info-info {
+    border-left-color: #17a2b8;
+    background: rgba(23, 162, 184, 0.2);
+}
+
+.continue-btn {
+    background: linear-gradient(135deg, #28a745 0%, #218838 100%);
+    color: white;
+    border: 2px solid #28a745;
+    padding: 12px 30px;
+    border-radius: 3px;
+    cursor: pointer;
+    font-size: 1.1em;
+    font-weight: bold;
+    text-align: center;
+    transition: all 0.3s;
+    text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.8);
+    display: block;
+    width: 100%;
+    margin-bottom: 15px;
+}
+
+.continue-btn:hover {
+    background: linear-gradient(135deg, #34ce57 0%, #28a745 100%);
+    border-color: #34ce57;
+    box-shadow: 0 0 15px rgba(40, 167, 69, 0.6);
+    transform: scale(1.02);
+}
+
+@keyframes slideIn {
+    from {
+        opacity: 0;
+        transform: translateY(-10px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
 .options-container {
     display: flex;
     flex-direction: column;
