@@ -9,7 +9,19 @@
 </head>
 <body>
     <div class="game-container">
-        <div class="sidebar" id="sidebar">
+        <!-- Full-screen map background -->
+        <div class="map-section" id="mapSection" style="display: none;">
+            <h2>🗺️ Map</h2>
+            <div class="map-with-editor">
+                <div id="mapContainer" class="map-container"></div>
+                <div id="mapEditorSidebar" class="map-editor-sidebar" style="display: none;">
+                    <div id="mapEditorContent"></div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Player sidebar - left side -->
+        <div class="sidebar" id="sidebar" style="display: none;">
             <h2>Player</h2>
             <div class="stat-group">
                 <div class="stat">
@@ -29,18 +41,18 @@
                     <span class="stat-value" id="coins">0</span>
                 </div>
             </div>
-            
+
             <h3>Skills</h3>
             <div class="skills-list" id="skills"></div>
-            
+
             <h3>Inventory</h3>
             <div class="inventory-list" id="inventory"></div>
-            
+
             <h3>Companions</h3>
             <div class="companions-list" id="companions"></div>
-            
+
             <div id="companionDetails"></div>
-            
+
             <button class="shop-btn" id="shopBtn" style="display: none;">🏪 Open Shop</button>
             <button class="shop-btn" id="inventoryBtn" style="background: #5e8a3a; display: none;">📦 Manage Inventory</button>
             <button class="shop-btn" id="debugBtn" style="background: #dc3545; display: none;">🐛 Add Companion</button>
@@ -52,7 +64,8 @@
             <button class="shop-btn" id="mapViewBtn" style="background: #17a2b8; display: none;">👁️ Map View Mode</button>
             <button class="shop-btn" id="mapEditBtn" style="background: #ffc107; display: none;">✏️ Map Edit Mode</button>
         </div>
-        
+
+        <!-- Encounters panel - bottom half -->
         <div class="main-panel" id="mainPanel">
             <div class="start-screen" id="startScreen">
                 <h1>🗡️ Text RPG Adventure 🗡️</h1>
@@ -61,25 +74,11 @@
             </div>
 
             <div id="gameContent" style="display: none;">
-                <div class="game-layout">
-                    <div class="map-section" id="mapSection">
-                        <h2>🗺️ Map</h2>
-                        <div class="map-with-editor">
-                            <div id="mapContainer" class="map-container"></div>
-                            <div id="mapEditorSidebar" class="map-editor-sidebar" style="display: none;">
-                                <div id="mapEditorContent"></div>
-                            </div>
-                        </div>
-                    </div>
-
-                    <div class="content-section">
-                        <h1>Adventure Log</h1>
-                        <div id="encounterContainer"></div>
-                        <div class="log-container">
-                            <h3>Recent Events</h3>
-                            <div id="logContainer"></div>
-                        </div>
-                    </div>
+                <h1>Adventure Log</h1>
+                <div id="encounterContainer"></div>
+                <div class="log-container">
+                    <h3>Recent Events</h3>
+                    <div id="logContainer"></div>
                 </div>
             </div>
         </div>

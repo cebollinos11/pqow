@@ -16,6 +16,8 @@ class Game {
 
         document.getElementById('startScreen').style.display = 'none';
         document.getElementById('gameContent').style.display = 'block';
+        document.getElementById('mapSection').style.display = 'block';
+        document.getElementById('sidebar').style.display = 'block';
 
         // Initialize hex map
         this.hexMap = new HexMap('mapContainer', 15, 10);
