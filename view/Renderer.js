@@ -4,21 +4,16 @@
 Game.prototype.renderEncounter = function() {
     const container = document.getElementById('encounterContainer');
     container.innerHTML = '';
-    
+
     if (!this.state.currentEncounter) return;
-    
+
     // Show wound distribution panel if pending
     if (this.state.pendingWounds !== null) {
         this.renderWoundDistribution(container);
         return;
     }
-    
-    // Show dice result panel if we're showing roll results
-    if (this.state.showingRollResult && this.state.rollResult) {
-        this.renderDiceResult(container);
-        return;
-    }
-    
+
+    // Always show encounter text
     const textDiv = document.createElement('div');
     textDiv.className = 'encounter-text';
     textDiv.textContent = this.state.currentEncounter.text;
@@ -30,6 +25,12 @@ Game.prototype.renderEncounter = function() {
         selectedDiv.className = 'selected-option';
         selectedDiv.innerHTML = `<strong>➤ You chose:</strong> ${this.state.selectedOption}`;
         container.appendChild(selectedDiv);
+    }
+
+    // Show dice result panel if we're showing roll results
+    if (this.state.showingRollResult && this.state.rollResult) {
+        this.renderDiceResult(container);
+        return;
     }
 
     // Only show options if no option has been selected yet and no pending roll
