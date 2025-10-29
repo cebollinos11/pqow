@@ -34,6 +34,7 @@ class Game {
         document.getElementById('woundsBtn').style.display = 'block';
         document.getElementById('toggleEncounterPanelBtn').style.display = 'block';
         document.getElementById('toggleLogPanelBtn').style.display = 'block';
+        document.getElementById('toggleTTSBtn').style.display = 'block';
 
         this.state.addLog('🎮 Your adventure begins!', 'success');
         this.nextEncounter();
@@ -59,6 +60,12 @@ class Game {
         this.state.currentEncounter = encounter;
         this.state.selectedOption = null; // Clear selected option for new encounter
         this.state.completedRolls = []; // Clear completed rolls for new encounter
+
+        // Speak the encounter text if TTS is enabled
+        if (this.state.ttsEnabled) {
+            this.state.speak(encounter.text);
+        }
+
         this.render();
     }
     

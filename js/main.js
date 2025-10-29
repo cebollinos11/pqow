@@ -88,6 +88,13 @@ function setupGameButtons() {
         };
     }
 
+    const toggleTTSBtn = document.getElementById('toggleTTSBtn');
+    if (toggleTTSBtn) {
+        toggleTTSBtn.onclick = () => {
+            game.toggleTTS();
+        };
+    }
+
     // Panel header toggle buttons
     const toggleEncounterBtn = document.getElementById('toggleEncounterBtn');
     if (toggleEncounterBtn) {

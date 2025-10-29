@@ -12,6 +12,7 @@ class GameState {
         this.showingRollResult = false;
         this.pendingWounds = null;
         this.woundDistribution = {};
+        this.ttsEnabled = false; // Text-to-speech toggle
     }
     
     addCompanion(companion) {
@@ -33,6 +34,11 @@ class GameState {
     addEncounterInfo(message, type = 'info', callback = null) {
         // Add to log
         this.addLog(message, type);
+
+        // Speak the message if TTS is enabled
+        if (this.ttsEnabled) {
+            this.speak(message);
+        }
 
         // Add to encounter panel with continue button
         const container = document.getElementById('encounterContainer');
@@ -57,10 +63,32 @@ class GameState {
                 }
             });
             container.appendChild(continueBtn);
+
+            // Scroll to bottom after adding content
+            const panelContent = document.getElementById('encounterPanelContent');
+            if (panelContent) {
+                setTimeout(() => {
+                    panelContent.scrollTop = panelContent.scrollHeight;
+                }, 0);
+            }
         } else if (callback) {
             // If no container, just execute callback immediately
             callback();
         }
+    }
+
+    speak(text) {
+        // Cancel any ongoing speech
+        window.speechSynthesis.cancel();
+
+        // Create utterance
+        const utterance = new SpeechSynthesisUtterance(text);
+        utterance.rate = 1.0;
+        utterance.pitch = 1.0;
+        utterance.volume = 1.0;
+
+        // Speak
+        window.speechSynthesis.speak(utterance);
     }
     
     roll(difficulty, skill = null, useLuck = false) {

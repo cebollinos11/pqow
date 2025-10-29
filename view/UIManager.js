@@ -658,6 +658,24 @@ Game.prototype.toggleLogCollapse = function() {
     }
 };
 
+Game.prototype.toggleTTS = function() {
+    this.state.ttsEnabled = !this.state.ttsEnabled;
+    const btn = document.getElementById('toggleTTSBtn');
+    if (btn) {
+        if (this.state.ttsEnabled) {
+            btn.textContent = '🔊 Text-to-Speech: ON';
+            btn.style.background = '#4caf50';
+            this.state.addLog('🔊 Text-to-speech enabled', 'success');
+        } else {
+            btn.textContent = '🔇 Text-to-Speech: OFF';
+            btn.style.background = '#9c27b0';
+            this.state.addLog('🔇 Text-to-speech disabled', 'info');
+            // Cancel any ongoing speech
+            window.speechSynthesis.cancel();
+        }
+    }
+};
+
 // Map methods
 Game.prototype.setMapMode = function(mode) {
     if (this.hexMap) {
