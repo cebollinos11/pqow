@@ -23,19 +23,35 @@ Game.prototype.renderEncounter = function() {
     textDiv.className = 'encounter-text';
     textDiv.textContent = this.state.currentEncounter.text;
     container.appendChild(textDiv);
-    
-    if (!this.state.pendingRoll) {
+
+    // Show selected option if one was chosen
+    if (this.state.selectedOption) {
+        const selectedDiv = document.createElement('div');
+        selectedDiv.className = 'selected-option';
+        selectedDiv.innerHTML = `<strong>➤ You chose:</strong> ${this.state.selectedOption}`;
+        container.appendChild(selectedDiv);
+    }
+
+    // Only show options if no option has been selected yet and no pending roll
+    if (!this.state.selectedOption && !this.state.pendingRoll) {
         const optionsDiv = document.createElement('div');
         optionsDiv.className = 'options-container';
-        
+
         this.state.currentEncounter.options.forEach((option, idx) => {
             const btn = document.createElement('button');
             btn.className = 'option-btn';
             btn.textContent = option.text;
-            btn.addEventListener('click', () => option.action(this));
+            btn.addEventListener('click', () => {
+                // Store the selected option
+                this.state.selectedOption = option.text;
+                // Re-render to show selected option and hide buttons
+                this.renderEncounter();
+                // Execute the action
+                option.action(this);
+            });
             optionsDiv.appendChild(btn);
         });
-        
+
         container.appendChild(optionsDiv);
     }
 };

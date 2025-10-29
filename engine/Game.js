@@ -51,12 +51,13 @@ class Game {
     
     loadEncounter(encounter) {
         this.encounterHistory.push(encounter.id);
-        
+
         if (this.encounterHistory.length > 10) {
             this.encounterHistory.shift();
         }
-        
+
         this.state.currentEncounter = encounter;
+        this.state.selectedOption = null; // Clear selected option for new encounter
         this.render();
     }
     

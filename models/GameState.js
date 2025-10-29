@@ -6,6 +6,7 @@ class GameState {
         this.deadCompanions = [];
         this.log = [];
         this.currentEncounter = null;
+        this.selectedOption = null; // Track which option was selected
         this.pendingRoll = null;
         this.showingRollResult = false;
         this.pendingWounds = null;
