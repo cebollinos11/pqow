@@ -97,12 +97,11 @@ class Game {
         this.state.rollCallback = null;
         this.state.showingRollResult = false;
 
-        // Clear the encounter container to remove dice result panel
-        const container = document.getElementById('encounterContainer');
-        if (container) {
-            container.innerHTML = '';
-        }
-
+        // Remove only the continue button from the dice result panel
+        const continueBtn = document.getElementById('continueBtn');
+        if (continueBtn) {
+            continueBtn.remove();
+         }   
         // Execute the callback with the outcome (this will add encounter info)
         callback(outcome);
 
