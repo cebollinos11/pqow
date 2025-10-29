@@ -123,18 +123,37 @@ Game.prototype.renderCompletedDiceResult = function(container, skill, rollResult
 
 Game.prototype.renderLuckPrompt = function() {
     const container = document.getElementById('encounterContainer');
+    const { difficulty, skill } = this.state.pendingRoll;
+
     const prompt = document.createElement('div');
     prompt.className = 'luck-prompt';
     prompt.innerHTML = `
-        <strong>🍀 Use a Luck Point?</strong>
-        <p>You have ${this.state.player.luck} luck remaining. Using luck gives you +1 to your roll.</p>
-        <button class="luck-btn" id="useLuckBtn">Use Luck (+1)</button>
-        <button class="luck-btn" id="noLuckBtn">Don't Use Luck</button>
+        <div class="luck-prompt-title">🎲 Dice Roll Required 🎲</div>
+        <div class="luck-prompt-info">
+            Make a roll${skill ? ` of <strong>${skill}</strong>` : ''} with difficulty <strong>${difficulty}</strong>
+        </div>
+        ${this.state.player.luck > 0 ? `
+            <div class="luck-prompt-luck">
+                You have <strong>${this.state.player.luck}</strong> luck point${this.state.player.luck !== 1 ? 's' : ''} remaining.
+                Using luck gives you <strong>+1</strong> to your roll.
+            </div>
+        ` : ''}
+        <div class="luck-prompt-buttons">
+            <button class="luck-btn luck-btn-normal" id="noLuckBtn">🎲 Roll</button>
+            ${this.state.player.luck > 0 ? `
+                <button class="luck-btn luck-btn-luck" id="useLuckBtn">🍀 Roll using Luck</button>
+            ` : ''}
+        </div>
     `;
     container.appendChild(prompt);
-    
-    document.getElementById('useLuckBtn').addEventListener('click', () => this.executeRoll(true));
+
     document.getElementById('noLuckBtn').addEventListener('click', () => this.executeRoll(false));
+    if (this.state.player.luck > 0) {
+        document.getElementById('useLuckBtn').addEventListener('click', () => this.executeRoll(true));
+    }
+
+    // Scroll to bottom after adding luck prompt
+    this.scrollEncounterToBottom();
 };
 
 Game.prototype.renderWoundDistribution = function(container) {
