@@ -35,15 +35,14 @@ const ENCOUNTERS = [
         'merchant',
         'A traveling merchant approaches you with a friendly smile. "Looking to trade?"',
         [
-            new EncounterOption('🍞 Buy food (costs 1 luck)', Actions.direct((game) => {
-                if (game.state.player.luck > 0) {
-                    game.state.player.useLuck();
-                    game.state.player.addFood(3);
-                    game.state.addEncounterInfo('Purchased 3 food for 1 luck.', 'success', () => game.nextEncounter());
-                } else {
-                    game.state.addEncounterInfo('Not enough luck!', 'danger', () => game.nextEncounter());
-                }
-            })),
+            new EncounterOption('🍞 Buy food', Actions.direct((game) => {
+                game.state.player.addFood(3);
+                game.state.addEncounterInfo('💰 Purchased 3 food for 10 coins.', 'success', () => game.nextEncounter());
+            }), { type: 'coins', amount: 10 }),
+            new EncounterOption('🍀 Buy luck point', Actions.direct((game) => {
+                game.state.player.addLuck(1);
+                game.state.addEncounterInfo('💰 Purchased 1 luck point for 20 coins.', 'success', () => game.nextEncounter());
+            }), { type: 'coins', amount: 20 }),
             new EncounterOption('🗡️ Rob the merchant', Actions.skillCheck(15, 'Pickpocketing', {
                 'GS': (game) => {
                     game.state.player.addFood(2);
@@ -71,15 +70,22 @@ const ENCOUNTERS = [
         'locked_chest',
         'You discover an old locked chest partially buried in the ground.',
         [
-            new EncounterOption('🔓 Pick the lock', Actions.skillCheck(12, 'Lockpicking', {
+            new EncounterOption('🔓 Use lockpick', Actions.direct((game) => {
+                game.state.player.addLuck(2);
+                game.state.player.addCoins(30);
+                game.state.player.addToInventory('Golden Coin');
+                game.state.addEncounterInfo('📦 Used lockpick to open the chest! Found luck, coins, and treasure!', 'success', () => game.nextEncounter());
+            }), { type: 'item', item: 'Lockpick' }),
+            new EncounterOption('🔓 Pick the lock (no tools)', Actions.skillCheck(15, 'Lockpicking', {
                 'GS': (game) => {
                     game.state.player.addLuck(2);
+                    game.state.player.addCoins(30);
                     game.state.player.addToInventory('Golden Coin');
-                    game.state.addEncounterInfo('Successfully picked the lock! Found luck and treasure!', 'success', () => game.nextEncounter());
+                    game.state.addEncounterInfo('Successfully picked the lock! Found luck, coins, and treasure!', 'success', () => game.nextEncounter());
                 },
                 'MS': (game) => {
                     game.state.player.addLuck(1);
-                    game.state.addEncounterInfo('You managed to open it, but your lockpick broke.', 'warning', () => game.nextEncounter());
+                    game.state.addEncounterInfo('You managed to open it, but it took a while.', 'warning', () => game.nextEncounter());
                 },
                 'BS': (game) => {
                     game.distributeWounds(1, () => {
@@ -109,16 +115,12 @@ const ENCOUNTERS = [
         'A bandit jumps out from behind a tree! "Your gold or your life!"',
         [
             new EncounterOption('⚔️ Fight!', Actions.genericFight(14, 'Combat Training')),
-            new EncounterOption('💰 Give 2 food', Actions.direct((game) => {
-                if (game.state.player.food >= 2) {
-                    game.state.player.removeFood(2);
-                    game.state.addEncounterInfo('You gave the bandit food and he let you pass.', 'warning', () => game.nextEncounter());
-                } else {
-                    game.state.addEncounterInfo('You don\'t have enough food! The bandit attacks!', 'danger', () => {
-                        Actions.genericFight(14, 'Combat Training')(game);
-                    });
-                }
-            })),
+            new EncounterOption('💰 Bribe with coins', Actions.direct((game) => {
+                game.state.addEncounterInfo('💰 You gave the bandit 15 coins and they let you pass.', 'warning', () => game.nextEncounter());
+            }), { type: 'coins', amount: 15 }),
+            new EncounterOption('🍞 Bribe with food', Actions.direct((game) => {
+                game.state.addEncounterInfo('🍞 You gave the bandit 2 food and they let you pass.', 'warning', () => game.nextEncounter());
+            }), { type: 'food', amount: 2 }),
             new EncounterOption('🗣️ Persuade them', Actions.skillCheck(13, 'Charisma', {
                 'GS': (game) => {
                     game.state.player.addLuck(1);

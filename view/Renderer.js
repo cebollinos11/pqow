@@ -46,14 +46,34 @@ Game.prototype.renderEncounter = function() {
         this.state.currentEncounter.options.forEach((option, idx) => {
             const btn = document.createElement('button');
             btn.className = 'option-btn';
-            btn.textContent = option.text;
+
+            // Check if player can afford this option
+            const canAfford = option.canAfford(this);
+
+            // Add cost text to button
+            btn.textContent = option.text + option.getCostText();
+
+            // Disable button if can't afford
+            if (!canAfford) {
+                btn.disabled = true;
+                btn.classList.add('option-btn-disabled');
+            }
+
             btn.addEventListener('click', () => {
-                // Store the selected option
-                this.state.selectedOption = option.text;
-                // Re-render to show selected option and hide buttons
-                this.renderEncounter();
-                // Execute the action
-                option.action(this);
+                // Try to pay the cost
+                if (option.payCost(this)) {
+                    // Store the selected option
+                    this.state.selectedOption = option.text + option.getCostText();
+                    // Re-render to show selected option and hide buttons
+                    this.renderEncounter();
+                    // Update stats to show cost paid
+                    this.renderStats();
+                    // Execute the action
+                    option.action(this);
+                } else {
+                    // This shouldn't happen if button is properly disabled
+                    this.state.addLog('❌ Cannot afford this option!', 'danger');
+                }
             });
             optionsDiv.appendChild(btn);
         });
