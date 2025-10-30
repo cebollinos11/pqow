@@ -2,7 +2,7 @@
 const ITEMS = {
     'Health Potion': { value: 10, description: 'Heals 2 wounds' },
     'Healing Water': { value: 8, description: 'Heals 1 wound' },
-    'Lockpick Set': { value: 15, description: 'Useful for opening locked things' },
+    'Lockpick': { value: 15, description: 'Useful for opening locked things' },
     'Rope': { value: 5, description: 'Always handy to have' },
     'Torch': { value: 3, description: 'Lights the way' },
     'Golden Coin': { value: 20, description: 'Valuable currency' },

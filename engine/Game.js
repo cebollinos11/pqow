@@ -13,7 +13,6 @@ class Game {
         this.state.player.addFood(3);
         this.state.player.addLuck(2);
         this.state.player.addCoins(50);
-        this.state.player.addToInventory('Lockpick');
 
         // Hide start panel, show game panels
         document.getElementById('startPanel').style.display = 'none';
