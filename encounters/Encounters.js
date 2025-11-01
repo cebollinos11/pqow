@@ -28,7 +28,8 @@ const ENCOUNTERS = [
             new EncounterOption('🏃 Run away', Actions.direct((game) => {
                 game.state.addEncounterInfo('You flee from the bear and continue on your journey.', 'info', () => game.nextEncounter());
             }))
-        ]
+        ],
+        ['forest', 'wilderness']
     ),
     
     new Encounter(
@@ -63,7 +64,8 @@ const ENCOUNTERS = [
             new EncounterOption('👋 Leave peacefully', Actions.direct((game) => {
                 game.state.addEncounterInfo('You wave goodbye to the merchant.', 'info', () => game.nextEncounter());
             }))
-        ]
+        ],
+        ['road', 'plains']
     ),
     
     new Encounter(
@@ -107,7 +109,8 @@ const ENCOUNTERS = [
             new EncounterOption('🚶 Leave it', Actions.direct((game) => {
                 game.state.addEncounterInfo('You decide not to risk it and continue on.', 'info', () => game.nextEncounter());
             }))
-        ]
+        ],
+        ['wilderness', 'ruins']
     ),
     
     new Encounter(
@@ -135,7 +138,8 @@ const ENCOUNTERS = [
                     });
                 }
             }))
-        ]
+        ],
+        ['road', 'forest']
     ),
     
     new Encounter(
@@ -153,7 +157,8 @@ const ENCOUNTERS = [
             new EncounterOption('🚶 Move on', Actions.direct((game) => {
                 game.state.addEncounterInfo('You continue your journey.', 'info', () => game.nextEncounter());
             }))
-        ]
+        ],
+        ['wilderness', 'forest']
     ),
     
     new Encounter(
@@ -177,7 +182,127 @@ const ENCOUNTERS = [
             new EncounterOption('❌ Refuse', Actions.direct((game) => {
                 game.state.addEncounterInfo('You politely decline and move on.', 'info', () => game.nextEncounter());
             }))
-        ]
+        ],
+        ['road', 'city']
+    ),
+
+    // ==================== DUNGEON ENCOUNTERS ====================
+
+    new Encounter(
+        'dungeon_skeleton',
+        'A skeleton warrior rises from the dusty floor, bones rattling as it reaches for a rusty sword.',
+        [
+            new EncounterOption('⚔️ Fight the skeleton', Actions.genericFight(12, 'Combat Training')),
+            new EncounterOption('🏃 Flee deeper into the dungeon', Actions.direct((game) => {
+                game.state.addEncounterInfo('You run past the skeleton into the darkness.', 'info', () => game.nextEncounter());
+            }))
+        ],
+        ['dungeon']
+    ),
+
+    new Encounter(
+        'dungeon_trap',
+        'You notice pressure plates on the floor ahead. The corridor is narrow.',
+        [
+            new EncounterOption('🎯 Carefully disarm the trap', Actions.skillCheck(13, 'Lockpicking', {
+                'GS': (game) => {
+                    game.state.player.addCoins(20);
+                    game.state.addEncounterInfo('You disarmed the trap and found coins in a hidden compartment!', 'success', () => game.nextEncounter());
+                },
+                'MS': (game) => {
+                    game.state.addEncounterInfo('You disarmed the trap, but it took a while.', 'warning', () => game.nextEncounter());
+                },
+                'BS': (game) => {
+                    game.distributeWounds(2, () => {
+                        game.state.addEncounterInfo('The trap triggered! Arrows fly from the walls!', 'danger', () => game.nextEncounter());
+                    });
+                }
+            })),
+            new EncounterOption('🏃 Sprint across', Actions.direct((game) => {
+                const outcome = Math.random();
+                if (outcome > 0.4) {
+                    game.state.addEncounterInfo('You made it across safely!', 'success', () => game.nextEncounter());
+                } else {
+                    game.distributeWounds(1, () => {
+                        game.state.addEncounterInfo('A dart hit you as you ran!', 'danger', () => game.nextEncounter());
+                    });
+                }
+            }))
+        ],
+        ['dungeon']
+    ),
+
+    new Encounter(
+        'dungeon_altar',
+        'An ancient altar stands in the center of the room, covered in strange runes that glow faintly.',
+        [
+            new EncounterOption('🙏 Pray at the altar', Actions.direct((game) => {
+                const outcome = Math.random();
+                if (outcome > 0.5) {
+                    game.state.player.addLuck(1);
+                    game.state.addEncounterInfo('The altar glows brightly and you feel blessed!', 'success', () => game.nextEncounter());
+                } else {
+                    game.distributeWounds(1, () => {
+                        game.state.addEncounterInfo('Dark energy surges from the altar!', 'danger', () => game.nextEncounter());
+                    });
+                }
+            })),
+            new EncounterOption('🚶 Leave it alone', Actions.direct((game) => {
+                game.state.addEncounterInfo('You wisely avoid the mysterious altar.', 'info', () => game.nextEncounter());
+            }))
+        ],
+        ['dungeon']
+    ),
+
+    new Encounter(
+        'dungeon_rats',
+        'A swarm of giant rats blocks your path, their red eyes gleaming in the torchlight.',
+        [
+            new EncounterOption('⚔️ Fight the rats', Actions.genericFight(10, 'Combat Training')),
+            new EncounterOption('🍞 Throw food to distract them', Actions.direct((game) => {
+                game.state.addEncounterInfo('🍞 The rats devour the food, allowing you to pass safely.', 'success', () => game.nextEncounter());
+            }), { type: 'food', amount: 1 })
+        ],
+        ['dungeon']
+    ),
+
+    new Encounter(
+        'dungeon_treasure',
+        'You find a small treasure chest sitting on a pedestal in an alcove.',
+        [
+            new EncounterOption('📦 Open the chest', Actions.direct((game) => {
+                game.state.player.addCoins(25);
+                game.state.player.addToInventory('Ancient Relic');
+                game.state.addEncounterInfo('You found coins and an ancient relic!', 'success', () => game.nextEncounter());
+            })),
+            new EncounterOption('🚶 Ignore it (might be trapped)', Actions.direct((game) => {
+                game.state.addEncounterInfo('You cautiously move on without touching the chest.', 'info', () => game.nextEncounter());
+            }))
+        ],
+        ['dungeon']
+    ),
+
+    new Encounter(
+        'dungeon_ghost',
+        'A translucent figure materializes before you, moaning in an ancient language.',
+        [
+            new EncounterOption('⚔️ Attack the ghost', Actions.genericFight(15, 'Combat Training')),
+            new EncounterOption('🕯️ Offer a prayer', Actions.skillCheck(12, 'Charisma', {
+                'GS': (game) => {
+                    game.state.player.addLuck(2);
+                    game.state.addEncounterInfo('The ghost fades peacefully, leaving behind a blessing.', 'success', () => game.nextEncounter());
+                },
+                'MS': (game) => {
+                    game.state.addEncounterInfo('The ghost seems calmer and drifts away.', 'warning', () => game.nextEncounter());
+                },
+                'BS': (game) => {
+                    game.distributeWounds(1, () => {
+                        game.state.addEncounterInfo('The ghost shrieks and lashes out!', 'danger', () => game.nextEncounter());
+                    });
+                }
+            }))
+        ],
+        ['dungeon']
     )
 ];
 

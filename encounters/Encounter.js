@@ -1,9 +1,10 @@
 // ==================== MODEL: ENCOUNTER ====================
 class Encounter {
-    constructor(id, text, options) {
+    constructor(id, text, options, tags = []) {
         this.id = id;
         this.text = text;
         this.options = options;
+        this.tags = tags; // Array of tags like ['swamp', 'city', 'plains', 'dungeon']
     }
 }
 
