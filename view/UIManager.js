@@ -615,6 +615,7 @@ Game.prototype.closeSequenceSelector = function() {
 Game.prototype.startSequenceFromUI = function() {
     const tag = document.getElementById('sequenceTag').value;
     const count = parseInt(document.getElementById('sequenceCount').value);
+    const retreatable = document.getElementById('sequenceRetreatable').checked;
 
     if (count < 1 || count > 20) {
         this.state.addLog('❌ Count must be between 1 and 20', 'danger');
@@ -622,7 +623,7 @@ Game.prototype.startSequenceFromUI = function() {
     }
 
     this.closeSequenceSelector();
-    this.startEncounterSequence(tag, count);
+    this.startEncounterSequence(tag, count, retreatable);
 };
 
 // Panel toggle methods

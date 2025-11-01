@@ -53,7 +53,13 @@ class Game {
                 const tag = this.state.encounterSequence.tag;
                 const completed = this.state.encounterSequence.total - this.state.encounterSequence.remaining;
                 this.state.addLog(`🎯 Sequence: ${completed}/${this.state.encounterSequence.total} completed. Loading next ${tag} encounter...`, 'info');
-                this.launchRandomEncounterByTag(tag);
+
+                // Show retreat option if enabled and not in last 2 encounters
+                if (this.state.encounterSequence.retreatable && this.state.encounterSequence.remaining > 2) {
+                    this.showRetreatPrompt(tag);
+                } else {
+                    this.launchRandomEncounterByTag(tag);
+                }
             } else {
                 // Sequence complete
                 this.state.addLog(`✅ Encounter sequence complete! (${this.state.encounterSequence.total} ${this.state.encounterSequence.tag} encounters)`, 'success');
@@ -69,7 +75,42 @@ class Game {
         }
     }
 
-    startEncounterSequence(tag, count) {
+    showRetreatPrompt(tag) {
+        // Show retreat option in encounter panel
+        const container = document.getElementById('encounterContainer');
+        if (container) {
+            const promptDiv = document.createElement('div');
+            promptDiv.className = 'retreat-prompt';
+            promptDiv.innerHTML = `
+                <div style="padding: 20px; background: linear-gradient(135deg, #3a2a1a 0%, #2a1a0a 100%); border: 2px solid #8b7355; border-radius: 5px; margin: 10px 0;">
+                    <p style="color: #d4af37; font-weight: bold; margin-bottom: 15px;">Continue deeper or retreat to safety?</p>
+                    <div style="display: flex; gap: 10px;">
+                        <button id="continueSequenceBtn" class="option-btn" style="flex: 1;">⚔️ Continue</button>
+                        <button id="retreatSequenceBtn" class="option-btn" style="flex: 1; background: linear-gradient(135deg, #8b4513 0%, #654321 100%);">🏃 Retreat</button>
+                    </div>
+                </div>
+            `;
+            container.appendChild(promptDiv);
+
+            // Add event listeners
+            document.getElementById('continueSequenceBtn').addEventListener('click', () => {
+                promptDiv.remove();
+                this.launchRandomEncounterByTag(tag);
+            });
+
+            document.getElementById('retreatSequenceBtn').addEventListener('click', () => {
+                promptDiv.remove();
+                this.retreatFromSequence();
+            });
+
+            // Auto-scroll to bottom
+            setTimeout(() => {
+                container.scrollTop = container.scrollHeight;
+            }, 100);
+        }
+    }
+
+    startEncounterSequence(tag, count, retreatable = false) {
         // Check if there are enough encounters with this tag
         const taggedEncounters = ENCOUNTERS.filter(e => e.tags && e.tags.includes(tag));
 
@@ -82,13 +123,25 @@ class Game {
         this.state.encounterSequence = {
             tag: tag,
             remaining: count,
-            total: count
+            total: count,
+            retreatable: retreatable
         };
 
-        this.state.addLog(`🎯 Starting encounter sequence: ${count} ${tag} encounters`, 'success');
+        const retreatMsg = retreatable ? ' (retreat available)' : '';
+        this.state.addLog(`🎯 Starting encounter sequence: ${count} ${tag} encounters${retreatMsg}`, 'success');
 
         // Launch first encounter
         this.launchRandomEncounterByTag(tag);
+    }
+
+    retreatFromSequence() {
+        if (this.state.encounterSequence) {
+            const completed = this.state.encounterSequence.total - this.state.encounterSequence.remaining;
+            this.state.addLog(`🏃 Retreated from sequence after ${completed} encounters!`, 'warning');
+            this.state.encounterSequence = null;
+            this.state.currentEncounter = null;
+            this.render();
+        }
     }
 
     launchRandomEncounterByTag(tag) {

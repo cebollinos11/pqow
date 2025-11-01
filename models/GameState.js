@@ -15,7 +15,7 @@ class GameState {
         this.ttsEnabled = false; // Text-to-speech toggle
 
         // Encounter sequence tracking
-        this.encounterSequence = null; // { tag: 'dungeon', remaining: 5, total: 5 }
+        this.encounterSequence = null; // { tag: 'dungeon', remaining: 5, total: 5, retreatable: true }
     }
     
     addCompanion(companion) {
