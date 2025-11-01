@@ -178,6 +178,17 @@ class Game {
         this.renderInventoryManagementWithNewItem();
     }
 
+    generateCityShopInventory() {
+        // Get all item names
+        const allItems = Object.keys(ITEMS);
+
+        // Shuffle and pick 10 random items
+        const shuffled = allItems.sort(() => Math.random() - 0.5);
+        this.state.cityShopInventory = shuffled.slice(0, 10);
+
+        this.state.addLog('🏪 The city shop has new inventory!', 'info');
+    }
+
     closeInventoryWithNewItem() {
         // Clear trash when closing inventory
         if (this.inventoryTrash && this.inventoryTrash.length > 0) {

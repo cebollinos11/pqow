@@ -16,6 +16,9 @@ class GameState {
 
         // Encounter sequence tracking
         this.encounterSequence = null; // { tag: 'dungeon', remaining: 5, total: 5, retreatable: true }
+
+        // City shop inventory (10 random items available for purchase)
+        this.cityShopInventory = null; // Array of item names
     }
     
     addCompanion(companion) {

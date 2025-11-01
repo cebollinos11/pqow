@@ -291,6 +291,122 @@ const ENCOUNTERS = [
             }))
         ],
         ['dungeon']
+    ),
+
+    // ==================== CITY ENCOUNTER ====================
+
+    new Encounter(
+        'city',
+        'You arrive at a bustling city. The streets are filled with merchants, travelers, and the smell of fresh bread. What would you like to do?',
+        [
+            new EncounterOption('🏨 Rest at the inn', Actions.direct((game) => {
+                const healCost = 10;
+                const woundsToHeal = game.state.player.wounds;
+
+                if (woundsToHeal === 0) {
+                    game.state.addEncounterInfo('You are already at full health!', 'info', () => {
+                        const cityEncounter = ENCOUNTERS.find(e => e.id === 'city');
+                        game.loadEncounter(cityEncounter);
+                    });
+                } else {
+                    const totalCost = woundsToHeal * healCost;
+                    if (game.state.player.coins >= totalCost) {
+                        game.state.player.removeCoins(totalCost);
+                        game.state.player.healWounds(woundsToHeal);
+                        game.state.addEncounterInfo(`💚 You rest at the inn and heal ${woundsToHeal} wound${woundsToHeal > 1 ? 's' : ''} for ${totalCost} coins. You feel refreshed!`, 'success', () => {
+                            const cityEncounter = ENCOUNTERS.find(e => e.id === 'city');
+                            game.loadEncounter(cityEncounter);
+                        });
+                    } else {
+                        game.state.addEncounterInfo(`You need ${totalCost} coins to heal all your wounds, but you only have ${game.state.player.coins} coins.`, 'warning', () => {
+                            const cityEncounter = ENCOUNTERS.find(e => e.id === 'city');
+                            game.loadEncounter(cityEncounter);
+                        });
+                    }
+                }
+            })),
+
+            new EncounterOption('🛒 Visit the shop', Actions.direct((game) => {
+                // Generate shop inventory if not already generated for this city
+                if (!game.state.cityShopInventory) {
+                    game.generateCityShopInventory();
+                }
+
+                // Open the shop modal with callback to return to city
+                game.openShop(() => {
+                    // When shop closes, reload the city encounter
+                    const cityEncounter = ENCOUNTERS.find(e => e.id === 'city');
+                    game.loadEncounter(cityEncounter);
+                });
+            })),
+
+            new EncounterOption('🍺 Visit the tavern', Actions.direct((game) => {
+                game.state.addEncounterInfo('🍺 You enter the tavern. It\'s lively with music and chatter.', 'info', () => {
+                    // Create a sub-encounter for the tavern
+                    const tavernEncounter = new Encounter(
+                        'city_tavern',
+                        'The tavern is warm and inviting. What would you like to do?',
+                        [
+                            new EncounterOption('👥 Hire a companion (50 coins)', Actions.direct((g) => {
+                                const availableCompanions = [
+                                    { name: 'Warrior', wounds: 4, maxWounds: 4, skills: ['Combat Training'] },
+                                    { name: 'Rogue', wounds: 3, maxWounds: 3, skills: ['Lockpicking', 'Pickpocketing'] },
+                                    { name: 'Ranger', wounds: 3, maxWounds: 3, skills: ['Survival', 'Animal Handling'] },
+                                    { name: 'Bard', wounds: 2, maxWounds: 2, skills: ['Charisma', 'Performance'] }
+                                ];
+
+                                const randomCompanion = availableCompanions[Math.floor(Math.random() * availableCompanions.length)];
+                                const companion = new Character(randomCompanion.name, randomCompanion.wounds, randomCompanion.maxWounds, 6);
+                                randomCompanion.skills.forEach(skill => companion.addSkill(skill));
+
+                                g.state.addCompanion(companion);
+                                g.state.addEncounterInfo(`👥 ${randomCompanion.name} joins your party!`, 'success', () => {
+                                    const cityEncounter = ENCOUNTERS.find(e => e.id === 'city');
+                                    g.loadEncounter(cityEncounter);
+                                });
+                            }), { type: 'coins', amount: 50 }),
+
+                            new EncounterOption('🍻 Get drunk (5 coins)', Actions.direct((g) => {
+                                const outcome = Math.random();
+                                if (outcome > 0.6) {
+                                    g.state.player.addLuck(1);
+                                    g.state.addEncounterInfo('🍻 You had a great time! You feel lucky! (+1 luck)', 'success', () => {
+                                        const cityEncounter = ENCOUNTERS.find(e => e.id === 'city');
+                                        g.loadEncounter(cityEncounter);
+                                    });
+                                } else if (outcome > 0.3) {
+                                    g.state.addEncounterInfo('🍻 You had a good time, but nothing special happened.', 'info', () => {
+                                        const cityEncounter = ENCOUNTERS.find(e => e.id === 'city');
+                                        g.loadEncounter(cityEncounter);
+                                    });
+                                } else {
+                                    g.distributeWounds(1, '🍻 You got into a bar fight and took a wound!', 'danger', () => {
+                                        const cityEncounter = ENCOUNTERS.find(e => e.id === 'city');
+                                        g.loadEncounter(cityEncounter);
+                                    });
+                                }
+                            }), { type: 'coins', amount: 5 }),
+
+                            new EncounterOption('🚪 Leave the tavern', Actions.direct((g) => {
+                                g.state.addEncounterInfo('You leave the tavern.', 'info', () => {
+                                    const cityEncounter = ENCOUNTERS.find(e => e.id === 'city');
+                                    g.loadEncounter(cityEncounter);
+                                });
+                            }))
+                        ],
+                        ['city']
+                    );
+                    game.loadEncounter(tavernEncounter);
+                });
+            })),
+
+            new EncounterOption('🚶 Leave the city', Actions.direct((game) => {
+                // Clear the city shop inventory so next city has different items
+                game.state.cityShopInventory = null;
+                game.state.addEncounterInfo('🚶 You leave the city and continue your journey.', 'info', () => game.nextEncounter());
+            }))
+        ],
+        ['city']
     )
 ];
 

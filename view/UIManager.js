@@ -10,24 +10,40 @@ Game.prototype.testWounds = function(amount = 3) {
 };
 
 // Shop methods
-Game.prototype.openShop = function() {
+Game.prototype.openShop = function(onCloseCallback = null) {
+    this.shopCloseCallback = onCloseCallback;
     document.getElementById('shopModal').style.display = 'block';
     this.renderShop('buy');
 };
 
 Game.prototype.closeShop = function() {
     document.getElementById('shopModal').style.display = 'none';
+
+    // Execute callback if provided
+    if (this.shopCloseCallback) {
+        const callback = this.shopCloseCallback;
+        this.shopCloseCallback = null; // Clear the callback
+        callback();
+    }
 };
 
 Game.prototype.renderShop = function(tab) {
     const content = document.getElementById('shopContent');
-    
+
     if (tab === 'buy') {
-        const availableItems = Object.entries(ITEMS).filter(([name]) => 
-            !this.state.player.inventory.includes(name) || 
-            ['Health Potion', 'Rations', 'Bandages', 'Healing Water'].includes(name)
-        );
-        
+        // Use city shop inventory if available, otherwise show all items
+        let availableItems;
+        if (this.state.cityShopInventory) {
+            // City shop: only show the 10 random items
+            availableItems = this.state.cityShopInventory.map(name => [name, ITEMS[name]]);
+        } else {
+            // Regular shop: show all items (except already owned unique items)
+            availableItems = Object.entries(ITEMS).filter(([name]) =>
+                !this.state.player.inventory.includes(name) ||
+                ['Health Potion', 'Rations', 'Bandages', 'Healing Water'].includes(name)
+            );
+        }
+
         content.innerHTML = `
             <div class="shop-items">
                 ${availableItems.map(([name, item]) => `
@@ -43,7 +59,7 @@ Game.prototype.renderShop = function(tab) {
                 `).join('')}
             </div>
         `;
-        
+
         document.querySelectorAll('.buy-btn').forEach(btn => {
             btn.addEventListener('click', (e) => {
                 const itemName = e.target.getAttribute('data-item');
