@@ -603,6 +603,28 @@ Game.prototype.launchSpecificEncounter = function(encounterId) {
     }
 };
 
+// Sequence selector methods
+Game.prototype.openSequenceSelector = function() {
+    document.getElementById('sequenceModal').style.display = 'block';
+};
+
+Game.prototype.closeSequenceSelector = function() {
+    document.getElementById('sequenceModal').style.display = 'none';
+};
+
+Game.prototype.startSequenceFromUI = function() {
+    const tag = document.getElementById('sequenceTag').value;
+    const count = parseInt(document.getElementById('sequenceCount').value);
+
+    if (count < 1 || count > 20) {
+        this.state.addLog('❌ Count must be between 1 and 20', 'danger');
+        return;
+    }
+
+    this.closeSequenceSelector();
+    this.startEncounterSequence(tag, count);
+};
+
 // Panel toggle methods
 Game.prototype.toggleEncounterPanel = function() {
     const panel = document.getElementById('encounterPanel');

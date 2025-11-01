@@ -13,6 +13,9 @@ class GameState {
         this.pendingWounds = null;
         this.woundDistribution = {};
         this.ttsEnabled = false; // Text-to-speech toggle
+
+        // Encounter sequence tracking
+        this.encounterSequence = null; // { tag: 'dungeon', remaining: 5, total: 5 }
     }
     
     addCompanion(companion) {

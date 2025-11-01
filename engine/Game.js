@@ -31,22 +31,77 @@ class Game {
         document.getElementById('debugBtn').style.display = 'block';
         document.getElementById('debugItemsBtn').style.display = 'block';
         document.getElementById('encounterBtn').style.display = 'block';
+        document.getElementById('sequenceBtn').style.display = 'block';
         document.getElementById('woundsBtn').style.display = 'block';
         document.getElementById('toggleEncounterPanelBtn').style.display = 'block';
         document.getElementById('toggleLogPanelBtn').style.display = 'block';
         document.getElementById('toggleTTSBtn').style.display = 'block';
 
         this.state.addLog('🎮 Your adventure begins!', 'success');
-        this.nextEncounter();
+        this.state.addLog('🐛 DEBUG: No encounter launched. Use the encounter button to start.', 'info');
         this.render();
     }
     
     nextEncounter() {
-        const availableEncounters = ENCOUNTERS.filter(e => 
-            !this.encounterHistory.includes(e.id) || this.encounterHistory.length >= ENCOUNTERS.length
-        );
-        
-        const encounter = availableEncounters[Math.floor(Math.random() * availableEncounters.length)];
+        // Check if we're in a sequence
+        if (this.state.encounterSequence && this.state.encounterSequence.remaining > 0) {
+            // Continue the sequence
+            this.state.encounterSequence.remaining--;
+
+            if (this.state.encounterSequence.remaining > 0) {
+                // More encounters in sequence
+                const tag = this.state.encounterSequence.tag;
+                const completed = this.state.encounterSequence.total - this.state.encounterSequence.remaining;
+                this.state.addLog(`🎯 Sequence: ${completed}/${this.state.encounterSequence.total} completed. Loading next ${tag} encounter...`, 'info');
+                this.launchRandomEncounterByTag(tag);
+            } else {
+                // Sequence complete
+                this.state.addLog(`✅ Encounter sequence complete! (${this.state.encounterSequence.total} ${this.state.encounterSequence.tag} encounters)`, 'success');
+                this.state.encounterSequence = null;
+                this.state.currentEncounter = null;
+                this.render();
+            }
+        } else {
+            // Not in a sequence - DEBUG mode
+            this.state.addLog('🐛 DEBUG: Encounter finished. Use the encounter button to launch a new one.', 'info');
+            this.state.currentEncounter = null;
+            this.render();
+        }
+    }
+
+    startEncounterSequence(tag, count) {
+        // Check if there are enough encounters with this tag
+        const taggedEncounters = ENCOUNTERS.filter(e => e.tags && e.tags.includes(tag));
+
+        if (taggedEncounters.length === 0) {
+            this.state.addLog(`❌ No encounters found with tag: ${tag}`, 'danger');
+            return;
+        }
+
+        // Initialize sequence
+        this.state.encounterSequence = {
+            tag: tag,
+            remaining: count,
+            total: count
+        };
+
+        this.state.addLog(`🎯 Starting encounter sequence: ${count} ${tag} encounters`, 'success');
+
+        // Launch first encounter
+        this.launchRandomEncounterByTag(tag);
+    }
+
+    launchRandomEncounterByTag(tag) {
+        const taggedEncounters = ENCOUNTERS.filter(e => e.tags && e.tags.includes(tag));
+
+        if (taggedEncounters.length === 0) {
+            this.state.addLog(`❌ No encounters found with tag: ${tag}`, 'danger');
+            this.state.encounterSequence = null;
+            return;
+        }
+
+        // Pick a random encounter from the tagged ones
+        const encounter = taggedEncounters[Math.floor(Math.random() * taggedEncounters.length)];
         this.loadEncounter(encounter);
     }
     

@@ -49,6 +49,11 @@ function setupGameButtons() {
         encounterBtn.onclick = () => game.openEncounterSelector();
     }
 
+    const sequenceBtn = document.getElementById('sequenceBtn');
+    if (sequenceBtn) {
+        sequenceBtn.onclick = () => game.openSequenceSelector();
+    }
+
     const woundsBtn = document.getElementById('woundsBtn');
     if (woundsBtn) {
         woundsBtn.onclick = () => game.testWounds(3);
@@ -126,7 +131,17 @@ function setupModalListeners() {
     if (closeEncounter) {
         closeEncounter.addEventListener('click', () => game.closeEncounterSelector());
     }
-    
+
+    const closeSequence = document.getElementById('closeSequence');
+    if (closeSequence) {
+        closeSequence.addEventListener('click', () => game.closeSequenceSelector());
+    }
+
+    const startSequenceBtn = document.getElementById('startSequenceBtn');
+    if (startSequenceBtn) {
+        startSequenceBtn.addEventListener('click', () => game.startSequenceFromUI());
+    }
+
     const buyTab = document.getElementById('buyTab');
     const sellTab = document.getElementById('sellTab');
     
@@ -151,6 +166,7 @@ function setupModalListeners() {
         const shopModal = document.getElementById('shopModal');
         const inventoryModal = document.getElementById('inventoryModal');
         const encounterModal = document.getElementById('encounterModal');
+        const sequenceModal = document.getElementById('sequenceModal');
 
         if (e.target === shopModal) {
             game.closeShop();
@@ -160,6 +176,9 @@ function setupModalListeners() {
         }
         if (e.target === encounterModal) {
             game.closeEncounterSelector();
+        }
+        if (e.target === sequenceModal) {
+            game.closeSequenceSelector();
         }
     });
 }

@@ -58,6 +58,7 @@
             <button class="shop-btn" id="debugBtn" style="background: #dc3545; display: none;">🐛 Add Companion</button>
             <button class="shop-btn" id="debugItemsBtn" style="background: #8b5cf6; display: none;">📦 Give Items & Companion</button>
             <button class="shop-btn" id="encounterBtn" style="background: #6610f2; display: none;">🎭 Launch Encounter</button>
+            <button class="shop-btn" id="sequenceBtn" style="background: #ff9800; display: none;">🎯 Start Sequence</button>
             <button class="shop-btn" id="woundsBtn" style="background: #ff6b6b; display: none;">💔 Test Wounds</button>
 
             <h3>Map Controls</h3>
@@ -136,6 +137,35 @@
                 <button class="close-btn" id="closeEncounter">&times;</button>
             </div>
             <div id="encounterContent"></div>
+        </div>
+    </div>
+
+    <!-- Sequence Selector Modal -->
+    <div id="sequenceModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2>🎯 Start Encounter Sequence</h2>
+                <button class="close-btn" id="closeSequence">&times;</button>
+            </div>
+            <div id="sequenceContent">
+                <div style="padding: 20px;">
+                    <label for="sequenceTag" style="display: block; margin-bottom: 10px; color: #d4af37; font-weight: bold;">Select Tag:</label>
+                    <select id="sequenceTag" style="width: 100%; padding: 10px; margin-bottom: 20px; background: #2d1b2e; color: #d4af37; border: 2px solid #8b7355; border-radius: 3px; font-size: 1em;">
+                        <option value="dungeon">🏰 Dungeon</option>
+                        <option value="forest">🌲 Forest</option>
+                        <option value="road">🛤️ Road</option>
+                        <option value="city">🏛️ City</option>
+                        <option value="plains">🌾 Plains</option>
+                        <option value="wilderness">🏕️ Wilderness</option>
+                        <option value="ruins">🏚️ Ruins</option>
+                    </select>
+
+                    <label for="sequenceCount" style="display: block; margin-bottom: 10px; color: #d4af37; font-weight: bold;">Number of Encounters:</label>
+                    <input type="number" id="sequenceCount" min="1" max="20" value="5" style="width: 100%; padding: 10px; margin-bottom: 20px; background: #2d1b2e; color: #d4af37; border: 2px solid #8b7355; border-radius: 3px; font-size: 1em;">
+
+                    <button id="startSequenceBtn" class="shop-btn" style="width: 100%; background: #ff9800; margin-top: 10px;">🎯 Start Sequence</button>
+                </div>
+            </div>
         </div>
     </div>
 
