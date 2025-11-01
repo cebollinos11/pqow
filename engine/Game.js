@@ -314,18 +314,46 @@ class Game {
         }
     }
     
-    distributeWounds(amount, callback) {
+    distributeWounds(amount, messageOrCallback, typeOrCallback, callback) {
+        // Handle different parameter combinations for backwards compatibility
+        let message = null;
+        let messageType = 'danger';
+        let finalCallback = null;
+
+        // Parse parameters based on types
+        if (typeof messageOrCallback === 'string') {
+            // New format: distributeWounds(amount, message, type, callback)
+            message = messageOrCallback;
+            if (typeof typeOrCallback === 'string') {
+                messageType = typeOrCallback;
+                finalCallback = callback;
+            } else {
+                // distributeWounds(amount, message, callback)
+                finalCallback = typeOrCallback;
+            }
+        } else if (typeof messageOrCallback === 'function') {
+            // Old format: distributeWounds(amount, callback)
+            finalCallback = messageOrCallback;
+        }
+
+        // Add message to log if provided
+        if (message) {
+            this.state.addLog(message, messageType);
+        }
+
         // If no companions, just apply to player directly
         if (this.state.companions.length === 0) {
             this.state.player.takeWounds(amount);
             this.renderStats(); // Only update stats, don't re-render encounter
-            if (callback) callback();
+            if (finalCallback) finalCallback();
             return;
         }
 
-        // Store pending wounds and callback
+        // Store pending wounds, callback, and message for display
         this.state.pendingWounds = amount;
-        this.state.woundCallback = callback;
+        this.state.woundCallback = finalCallback;
+        this.state.woundMessage = message;
+        this.state.woundMessageType = messageType;
 
         // Initialize distribution (no preassignment - all wounds unassigned)
         this.state.woundDistribution = { player: 0 };
@@ -403,6 +431,8 @@ class Game {
         this.state.pendingWounds = null;
         this.state.woundCallback = null;
         this.state.woundDistribution = {};
+        this.state.woundMessage = null;
+        this.state.woundMessageType = null;
 
         // Update stats but don't re-render encounter (callback will handle that)
         this.renderStats();

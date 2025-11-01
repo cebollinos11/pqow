@@ -12,18 +12,14 @@ const Actions = {
                             game.nextEncounter();
                         });
                     } else if (outcome === 'MS') {
-                        game.distributeWounds(1, () => {
-                            game.state.addEncounterInfo('⚔️ Victory, but wounds were taken in the fight.', 'warning', () => {
-                                game.checkGameOver();
-                                game.nextEncounter();
-                            });
+                        game.distributeWounds(1, '⚔️ Victory, but wounds were taken in the fight.', 'warning', () => {
+                            game.checkGameOver();
+                            game.nextEncounter();
                         });
                     } else {
-                        game.distributeWounds(3, () => {
-                            game.state.addEncounterInfo('⚔️ Victory, but heavy wounds were taken in the brutal fight!', 'danger', () => {
-                                game.checkGameOver();
-                                game.nextEncounter();
-                            });
+                        game.distributeWounds(3, '⚔️ Victory, but heavy wounds were taken in the brutal fight!', 'danger', () => {
+                            game.checkGameOver();
+                            game.nextEncounter();
                         });
                     }
                 }

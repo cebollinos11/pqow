@@ -13,15 +13,11 @@ const ENCOUNTERS = [
                     game.state.addEncounterInfo('🐻 The bear nuzzles you gently and joins your party!', 'success', () => game.nextEncounter());
                 },
                 'MS': (game) => {
-                    game.distributeWounds(1, () => {
-                        game.state.addEncounterInfo('🐻 The bear swipes at you before running away.', 'warning', () => game.nextEncounter());
-                    });
+                    game.distributeWounds(1, '🐻 The bear swipes at you before running away.', 'warning', () => game.nextEncounter());
                 },
                 'BS': (game) => {
-                    game.distributeWounds(1, () => {
-                        game.state.addEncounterInfo('🐻 The bear attacks! You must fight!', 'danger', () => {
-                            Actions.genericFight(16, 'Combat Training')(game);
-                        });
+                    game.distributeWounds(1, '🐻 The bear attacks! You must fight!', 'danger', () => {
+                        Actions.genericFight(16, 'Combat Training')(game);
                     });
                 }
             })),
@@ -57,9 +53,7 @@ const ENCOUNTERS = [
                     game.state.addEncounterInfo('You got some food, but the merchant noticed you!', 'warning', () => game.nextEncounter());
                 },
                 'BS': (game) => {
-                    game.distributeWounds(2, () => {
-                        game.state.addEncounterInfo('The merchant\'s guards caught you!', 'danger', () => game.nextEncounter());
-                    });
+                    game.distributeWounds(2, 'The merchant\'s guards caught you!', 'danger', () => game.nextEncounter());
                 }
             })),
             new EncounterOption('👋 Leave peacefully', Actions.direct((game) => {
@@ -93,9 +87,7 @@ const ENCOUNTERS = [
                     game.state.addEncounterInfo('You managed to open it, but it took a while.', 'warning', () => game.nextEncounter());
                 },
                 'BS': (game) => {
-                    game.distributeWounds(1, () => {
-                        game.state.addEncounterInfo('The chest was trapped! It exploded.', 'danger', () => game.nextEncounter());
-                    });
+                    game.distributeWounds(1, 'The chest was trapped! It exploded.', 'danger', () => game.nextEncounter());
                 }
             })),
             new EncounterOption('💪 Smash it open', Actions.direct((game) => {
@@ -105,9 +97,7 @@ const ENCOUNTERS = [
                         game.state.addEncounterInfo('You smashed it open and found some broken items.', 'warning', () => game.nextEncounter());
                     });
                 } else {
-                    game.distributeWounds(1, () => {
-                        game.state.addEncounterInfo('The chest was too sturdy. You hurt yourself.', 'danger', () => game.nextEncounter());
-                    });
+                    game.distributeWounds(1, 'The chest was too sturdy. You hurt yourself.', 'danger', () => game.nextEncounter());
                 }
             })),
             new EncounterOption('🚶 Leave it', Actions.direct((game) => {
@@ -218,9 +208,7 @@ const ENCOUNTERS = [
                     game.state.addEncounterInfo('You disarmed the trap, but it took a while.', 'warning', () => game.nextEncounter());
                 },
                 'BS': (game) => {
-                    game.distributeWounds(2, () => {
-                        game.state.addEncounterInfo('The trap triggered! Arrows fly from the walls!', 'danger', () => game.nextEncounter());
-                    });
+                    game.distributeWounds(2, 'The trap triggered! Arrows fly from the walls!', 'danger', () => game.nextEncounter());
                 }
             })),
             new EncounterOption('🏃 Sprint across', Actions.direct((game) => {
@@ -228,9 +216,7 @@ const ENCOUNTERS = [
                 if (outcome > 0.4) {
                     game.state.addEncounterInfo('You made it across safely!', 'success', () => game.nextEncounter());
                 } else {
-                    game.distributeWounds(1, () => {
-                        game.state.addEncounterInfo('A dart hit you as you ran!', 'danger', () => game.nextEncounter());
-                    });
+                    game.distributeWounds(1, 'A dart hit you as you ran!', 'danger', () => game.nextEncounter());
                 }
             }))
         ],
@@ -247,9 +233,7 @@ const ENCOUNTERS = [
                     game.state.player.addLuck(1);
                     game.state.addEncounterInfo('The altar glows brightly and you feel blessed!', 'success', () => game.nextEncounter());
                 } else {
-                    game.distributeWounds(1, () => {
-                        game.state.addEncounterInfo('Dark energy surges from the altar!', 'danger', () => game.nextEncounter());
-                    });
+                    game.distributeWounds(1, 'Dark energy surges from the altar!', 'danger', () => game.nextEncounter());
                 }
             })),
             new EncounterOption('🚶 Leave it alone', Actions.direct((game) => {
@@ -293,7 +277,7 @@ const ENCOUNTERS = [
         'A translucent figure materializes before you, moaning in an ancient language.',
         [
             new EncounterOption('⚔️ Attack the ghost', Actions.genericFight(15, 'Combat Training')),
-            new EncounterOption('🕯️ Offer a prayer', Actions.skillCheck(12, 'Charisma', {
+            new EncounterOption('🕯️ Offer a prayer', Actions.skillCheck(22, 'Charisma', {
                 'GS': (game) => {
                     game.state.player.addLuck(2);
                     game.state.addEncounterInfo('The ghost fades peacefully, leaving behind a blessing.', 'success', () => game.nextEncounter());
@@ -302,9 +286,7 @@ const ENCOUNTERS = [
                     game.state.addEncounterInfo('The ghost seems calmer and drifts away.', 'warning', () => game.nextEncounter());
                 },
                 'BS': (game) => {
-                    game.distributeWounds(1, () => {
-                        game.state.addEncounterInfo('The ghost shrieks and lashes out!', 'danger', () => game.nextEncounter());
-                    });
+                    game.distributeWounds(1, 'The ghost shrieks and lashes out!', 'danger', () => game.nextEncounter());
                 }
             }))
         ],
