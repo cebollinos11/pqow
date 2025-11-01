@@ -167,14 +167,6 @@ Game.prototype.renderLuckPrompt = function() {
 };
 
 Game.prototype.renderWoundDistribution = function(container) {
-    // Show message first if provided
-    if (this.state.woundMessage) {
-        const messageDiv = document.createElement('div');
-        messageDiv.className = `encounter-info encounter-info-${this.state.woundMessageType || 'danger'}`;
-        messageDiv.textContent = this.state.woundMessage;
-        container.appendChild(messageDiv);
-    }
-
     const allCharacters = [
         { char: this.state.player, id: 'player', name: 'Player (You)' },
         ...this.state.companions.map((c, idx) => ({

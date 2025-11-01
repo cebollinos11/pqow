@@ -336,11 +336,18 @@ class Game {
             finalCallback = messageOrCallback;
         }
 
-        // Add message to log if provided
+        // If message provided, show it with a "Take wounds" button
         if (message) {
-            this.state.addLog(message, messageType);
+            this.state.addEncounterInfo(message, messageType, () => {
+                this.proceedWithWoundDistribution(amount, finalCallback);
+            });
+        } else {
+            // No message, proceed directly
+            this.proceedWithWoundDistribution(amount, finalCallback);
         }
+    }
 
+    proceedWithWoundDistribution(amount, finalCallback) {
         // If no companions, just apply to player directly
         if (this.state.companions.length === 0) {
             this.state.player.takeWounds(amount);
@@ -349,11 +356,9 @@ class Game {
             return;
         }
 
-        // Store pending wounds, callback, and message for display
+        // Store pending wounds and callback
         this.state.pendingWounds = amount;
         this.state.woundCallback = finalCallback;
-        this.state.woundMessage = message;
-        this.state.woundMessageType = messageType;
 
         // Initialize distribution (no preassignment - all wounds unassigned)
         this.state.woundDistribution = { player: 0 };
@@ -431,8 +436,6 @@ class Game {
         this.state.pendingWounds = null;
         this.state.woundCallback = null;
         this.state.woundDistribution = {};
-        this.state.woundMessage = null;
-        this.state.woundMessageType = null;
 
         // Update stats but don't re-render encounter (callback will handle that)
         this.renderStats();
