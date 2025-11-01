@@ -30,6 +30,7 @@ class Game {
         document.getElementById('inventoryBtn').style.display = 'block';
         document.getElementById('debugBtn').style.display = 'block';
         document.getElementById('debugItemsBtn').style.display = 'block';
+        document.getElementById('debugRandomItemBtn').style.display = 'block';
         document.getElementById('encounterBtn').style.display = 'block';
         document.getElementById('sequenceBtn').style.display = 'block';
         document.getElementById('woundsBtn').style.display = 'block';
@@ -141,6 +142,79 @@ class Game {
             this.state.encounterSequence = null;
             this.state.currentEncounter = null;
             this.render();
+        }
+    }
+
+    addInventoryToParty(itemName, callback = null) {
+        // Try to add to player first
+        if (this.state.player.addToInventory(itemName)) {
+            this.state.addLog(`📦 ${itemName} added to Player's inventory`, 'success');
+            this.render();
+            if (callback) callback();
+            return true;
+        }
+
+        // Try to add to any companion with space
+        for (let i = 0; i < this.state.companions.length; i++) {
+            const companion = this.state.companions[i];
+            if (companion.addToInventory(itemName)) {
+                this.state.addLog(`📦 ${itemName} added to ${companion.name}'s inventory`, 'success');
+                this.render();
+                if (callback) callback();
+                return true;
+            }
+        }
+
+        // No space available - open inventory management with pending item
+        this.state.addLog(`⚠️ No inventory space! Manage inventory to make room for ${itemName}`, 'warning');
+        this.openInventoryForNewItem(itemName, callback);
+        return false;
+    }
+
+    openInventoryForNewItem(itemName, callback) {
+        this.pendingNewItem = itemName;
+        this.newItemCallback = callback;
+        document.getElementById('inventoryModal').style.display = 'block';
+        this.renderInventoryManagementWithNewItem();
+    }
+
+    closeInventoryWithNewItem() {
+        // Clear trash when closing inventory
+        if (this.inventoryTrash && this.inventoryTrash.length > 0) {
+            this.state.addLog(`🗑️ ${this.inventoryTrash.length} item${this.inventoryTrash.length !== 1 ? 's' : ''} permanently deleted`, 'info');
+            this.inventoryTrash = [];
+        }
+
+        // Try to add the pending item one more time
+        if (this.pendingNewItem) {
+            const itemName = this.pendingNewItem;
+            this.pendingNewItem = null;
+
+            // Try to add to any character with space
+            const allChars = [this.state.player, ...this.state.companions];
+            let added = false;
+
+            for (const char of allChars) {
+                if (char.addToInventory(itemName)) {
+                    this.state.addLog(`📦 ${itemName} added to ${char.name}'s inventory`, 'success');
+                    this.render();
+                    added = true;
+                    break;
+                }
+            }
+
+            if (!added) {
+                this.state.addLog(`❌ ${itemName} was lost - no inventory space!`, 'danger');
+            }
+        }
+
+        document.getElementById('inventoryModal').style.display = 'none';
+
+        // Execute callback if provided
+        if (this.newItemCallback) {
+            const callback = this.newItemCallback;
+            this.newItemCallback = null;
+            callback();
         }
     }
 

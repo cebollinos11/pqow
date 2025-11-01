@@ -702,6 +702,11 @@ h3 {
     border-color: #d4af37;
 }
 
+.character-inventory.has-space {
+    border-color: #4caf50;
+    box-shadow: 0 0 10px rgba(76, 175, 80, 0.3);
+}
+
 .character-header {
     display: flex;
     justify-content: space-between;

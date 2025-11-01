@@ -502,6 +502,174 @@ Game.prototype.lootCorpse = function(fromId, toId, itemName) {
     }
 };
 
+Game.prototype.renderInventoryManagementWithNewItem = function() {
+    const content = document.getElementById('inventoryContent');
+
+    // Create a list of all characters (player + companions)
+    const allCharacters = [
+        { char: this.state.player, name: 'Player', isPlayer: true },
+        ...this.state.companions.map((c, idx) => ({ char: c, name: c.name, idx, isPlayer: false }))
+    ];
+
+    // Initialize trash if it doesn't exist
+    if (!this.inventoryTrash) {
+        this.inventoryTrash = [];
+    }
+
+    const trashCount = this.inventoryTrash.length;
+    const pendingItem = this.pendingNewItem;
+    const itemData = ITEMS[pendingItem];
+
+    content.innerHTML = `
+        <div style="background: linear-gradient(135deg, #ff9800 0%, #f57c00 100%); padding: 15px; margin-bottom: 20px; border-radius: 5px; border: 2px solid #e65100;">
+            <h3 style="margin: 0 0 10px 0; color: #fff;">📦 New Item Found!</h3>
+            <div style="background: rgba(0,0,0,0.3); padding: 10px; border-radius: 3px;">
+                <div style="font-size: 1.2em; font-weight: bold; color: #d4af37; margin-bottom: 5px;">${pendingItem}</div>
+                <div style="color: #ccc; font-size: 0.9em;">${itemData ? itemData.description : ''}</div>
+            </div>
+            <p style="margin: 10px 0 0 0; color: #fff; font-size: 0.9em;">⚠️ Make room in someone's inventory or delete items to make space!</p>
+        </div>
+
+        <div class="inventory-grid">
+            ${allCharacters.map((charData) => {
+                const { char, name, isPlayer } = charData;
+                const slotUsage = char.inventory.length;
+                const maxSlots = char.maxInventory;
+                const slotPercentage = (slotUsage / maxSlots) * 100;
+                const hasSpace = slotUsage < maxSlots;
+
+                return `
+                    <div class="character-inventory ${isPlayer ? 'player' : ''} ${hasSpace ? 'has-space' : ''}">
+                        <div class="character-header">
+                            <h3>${isPlayer ? '👤 ' : '🤝 '}${name} ${hasSpace ? '✅' : '❌'}</h3>
+                            <div class="character-stats-mini">
+                                <span title="Wounds">💔 ${char.wounds}/${char.maxWounds}</span>
+                                <span title="Food">🍖 ${char.food}</span>
+                                <span title="Luck">✨ ${char.luck}</span>
+                            </div>
+                        </div>
+
+                        <div class="inventory-slot-bar">
+                            <div class="slot-usage" style="width: ${slotPercentage}%"></div>
+                        </div>
+                        <div class="slot-info">${slotUsage}/${maxSlots} slots ${hasSpace ? '(has space)' : '(full)'}</div>
+
+                        <div class="inventory-items" id="inv-${isPlayer ? 'player' : charData.idx}">
+                            ${char.inventory.length === 0 ?
+                                '<div class="empty-inventory">📭 No items</div>' :
+                                char.inventory.map((item) => {
+                                    const itemData = ITEMS[item];
+                                    return `
+                                        <div class="inventory-item-row">
+                                            <div class="item-info">
+                                                <span class="inventory-item-name">${item}</span>
+                                                <span class="item-description">${itemData ? itemData.description : ''}</span>
+                                            </div>
+                                            <div class="transfer-buttons">
+                                                ${allCharacters.filter(other =>
+                                                    (isPlayer ? !other.isPlayer : other.isPlayer || other.idx !== charData.idx)
+                                                ).map(targetChar => {
+                                                    const targetId = targetChar.isPlayer ? 'player' : targetChar.idx;
+                                                    const targetName = targetChar.isPlayer ? 'Player' : targetChar.name;
+                                                    const canTransfer = targetChar.char.inventory.length < targetChar.char.maxInventory;
+                                                    return `
+                                                        <button
+                                                            class="transfer-btn"
+                                                            data-from="${isPlayer ? 'player' : charData.idx}"
+                                                            data-to="${targetId}"
+                                                            data-item="${item}"
+                                                            ${!canTransfer ? 'disabled' : ''}
+                                                            title="Transfer to ${targetName}">
+                                                            ${targetChar.isPlayer ? '👤' : '🤝'} ${targetName}
+                                                        </button>
+                                                    `;
+                                                }).join('')}
+                                                <button
+                                                    class="delete-btn"
+                                                    data-from="${isPlayer ? 'player' : charData.idx}"
+                                                    data-item="${item}"
+                                                    title="Delete item">
+                                                    🗑️
+                                                </button>
+                                            </div>
+                                        </div>
+                                    `;
+                                }).join('')
+                            }
+                        </div>
+                    </div>
+                `;
+            }).join('')}
+
+            ${trashCount > 0 ? `
+                <div class="character-inventory trash-inventory">
+                    <div class="character-header">
+                        <h3>🗑️ Trash (${trashCount})</h3>
+                    </div>
+                    <div class="inventory-items" id="inv-trash">
+                        ${this.inventoryTrash.map((item) => {
+                            const itemData = ITEMS[item];
+                            return `
+                                <div class="inventory-item-row">
+                                    <div class="item-info">
+                                        <span class="inventory-item-name">${item}</span>
+                                        <span class="item-description">${itemData ? itemData.description : ''}</span>
+                                    </div>
+                                    <div class="transfer-buttons">
+                                        ${allCharacters.map(targetChar => {
+                                            const targetId = targetChar.isPlayer ? 'player' : targetChar.idx;
+                                            const targetName = targetChar.isPlayer ? 'Player' : targetChar.name;
+                                            const canRestore = targetChar.char.inventory.length < targetChar.char.maxInventory;
+                                            return `
+                                                <button
+                                                    class="restore-btn"
+                                                    data-to="${targetId}"
+                                                    data-item="${item}"
+                                                    ${!canRestore ? 'disabled' : ''}
+                                                    title="Restore to ${targetName}">
+                                                    ↩️ ${targetName}
+                                                </button>
+                                            `;
+                                        }).join('')}
+                                    </div>
+                                </div>
+                            `;
+                        }).join('')}
+                    </div>
+                </div>
+            ` : ''}
+        </div>
+    `;
+
+    // Add event listeners for transfer buttons
+    document.querySelectorAll('.transfer-btn').forEach(btn => {
+        btn.addEventListener('click', (e) => {
+            const fromId = e.currentTarget.getAttribute('data-from');
+            const toId = e.currentTarget.getAttribute('data-to');
+            const itemName = e.currentTarget.getAttribute('data-item');
+            this.transferItem(fromId, toId, itemName);
+        });
+    });
+
+    // Add event listeners for delete buttons
+    document.querySelectorAll('.delete-btn').forEach(btn => {
+        btn.addEventListener('click', (e) => {
+            const fromId = e.currentTarget.getAttribute('data-from');
+            const itemName = e.currentTarget.getAttribute('data-item');
+            this.deleteItem(fromId, itemName);
+        });
+    });
+
+    // Add event listeners for restore buttons
+    document.querySelectorAll('.restore-btn').forEach(btn => {
+        btn.addEventListener('click', (e) => {
+            const toId = e.currentTarget.getAttribute('data-to');
+            const itemName = e.currentTarget.getAttribute('data-item');
+            this.restoreItem(toId, itemName);
+        });
+    });
+};
+
 // Debug methods
 Game.prototype.debugAddCompanion = function() {
     const companionNames = [
@@ -553,6 +721,17 @@ Game.prototype.debugGiveItemsAndCompanion = function() {
     this.state.addLog(`🤝 Companion "carry" joined with: ${companionItemsAdded.join(', ')}`, 'success');
 
     this.render();
+};
+
+Game.prototype.debugAddRandomItem = function() {
+    // Get all item names
+    const itemNames = Object.keys(ITEMS);
+
+    // Pick a random item
+    const randomItem = itemNames[Math.floor(Math.random() * itemNames.length)];
+
+    // Use the party inventory system
+    this.addInventoryToParty(randomItem);
 };
 
 // Encounter selector methods

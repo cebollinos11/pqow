@@ -44,6 +44,11 @@ function setupGameButtons() {
         debugItemsBtn.onclick = () => game.debugGiveItemsAndCompanion();
     }
 
+    const debugRandomItemBtn = document.getElementById('debugRandomItemBtn');
+    if (debugRandomItemBtn) {
+        debugRandomItemBtn.onclick = () => game.debugAddRandomItem();
+    }
+
     const encounterBtn = document.getElementById('encounterBtn');
     if (encounterBtn) {
         encounterBtn.onclick = () => game.openEncounterSelector();
@@ -124,7 +129,14 @@ function setupModalListeners() {
 
     const closeInventory = document.getElementById('closeInventory');
     if (closeInventory) {
-        closeInventory.addEventListener('click', () => game.closeInventory());
+        closeInventory.addEventListener('click', () => {
+            // Check if we're in new item mode
+            if (game.pendingNewItem) {
+                game.closeInventoryWithNewItem();
+            } else {
+                game.closeInventory();
+            }
+        });
     }
 
     const closeEncounter = document.getElementById('closeEncounter');
@@ -172,7 +184,12 @@ function setupModalListeners() {
             game.closeShop();
         }
         if (e.target === inventoryModal) {
-            game.closeInventory();
+            // Check if we're in new item mode
+            if (game.pendingNewItem) {
+                game.closeInventoryWithNewItem();
+            } else {
+                game.closeInventory();
+            }
         }
         if (e.target === encounterModal) {
             game.closeEncounterSelector();

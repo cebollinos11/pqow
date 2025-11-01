@@ -48,8 +48,9 @@ const ENCOUNTERS = [
                 'GS': (game) => {
                     game.state.player.addFood(2);
                     game.state.player.addLuck(1);
-                    game.state.player.addToInventory('Stolen Goods');
-                    game.state.addEncounterInfo('Successfully robbed the merchant! Gained food, luck, and items.', 'success', () => game.nextEncounter());
+                    game.addInventoryToParty('Stolen Goods', () => {
+                        game.state.addEncounterInfo('Successfully robbed the merchant! Gained food, luck, and items.', 'success', () => game.nextEncounter());
+                    });
                 },
                 'MS': (game) => {
                     game.state.player.addFood(1);
@@ -75,15 +76,17 @@ const ENCOUNTERS = [
             new EncounterOption('🔓 Use lockpick', Actions.direct((game) => {
                 game.state.player.addLuck(2);
                 game.state.player.addCoins(30);
-                game.state.player.addToInventory('Golden Coin');
-                game.state.addEncounterInfo('📦 Used lockpick to open the chest! Found luck, coins, and treasure!', 'success', () => game.nextEncounter());
+                game.addInventoryToParty('Golden Coin', () => {
+                    game.state.addEncounterInfo('📦 Used lockpick to open the chest! Found luck, coins, and treasure!', 'success', () => game.nextEncounter());
+                });
             }), { type: 'item', item: 'Lockpick' }),
             new EncounterOption('🔓 Pick the lock (no tools)', Actions.skillCheck(15, 'Lockpicking', {
                 'GS': (game) => {
                     game.state.player.addLuck(2);
                     game.state.player.addCoins(30);
-                    game.state.player.addToInventory('Golden Coin');
-                    game.state.addEncounterInfo('Successfully picked the lock! Found luck, coins, and treasure!', 'success', () => game.nextEncounter());
+                    game.addInventoryToParty('Golden Coin', () => {
+                        game.state.addEncounterInfo('Successfully picked the lock! Found luck, coins, and treasure!', 'success', () => game.nextEncounter());
+                    });
                 },
                 'MS': (game) => {
                     game.state.player.addLuck(1);
@@ -98,8 +101,9 @@ const ENCOUNTERS = [
             new EncounterOption('💪 Smash it open', Actions.direct((game) => {
                 const outcome = Math.random();
                 if (outcome > 0.5) {
-                    game.state.player.addToInventory('Broken Treasure');
-                    game.state.addEncounterInfo('You smashed it open and found some broken items.', 'warning', () => game.nextEncounter());
+                    game.addInventoryToParty('Broken Treasure', () => {
+                        game.state.addEncounterInfo('You smashed it open and found some broken items.', 'warning', () => game.nextEncounter());
+                    });
                 } else {
                     game.distributeWounds(1, () => {
                         game.state.addEncounterInfo('The chest was too sturdy. You hurt yourself.', 'danger', () => game.nextEncounter());
@@ -151,8 +155,9 @@ const ENCOUNTERS = [
                 game.state.addEncounterInfo('The spring heals 2 wounds!', 'success', () => game.nextEncounter());
             })),
             new EncounterOption('🍼 Fill your waterskin', Actions.direct((game) => {
-                game.state.player.addToInventory('Healing Water');
-                game.state.addEncounterInfo('You fill a container with healing water.', 'success', () => game.nextEncounter());
+                game.addInventoryToParty('Healing Water', () => {
+                    game.state.addEncounterInfo('You fill a container with healing water.', 'success', () => game.nextEncounter());
+                });
             })),
             new EncounterOption('🚶 Move on', Actions.direct((game) => {
                 game.state.addEncounterInfo('You continue your journey.', 'info', () => game.nextEncounter());
@@ -272,8 +277,9 @@ const ENCOUNTERS = [
         [
             new EncounterOption('📦 Open the chest', Actions.direct((game) => {
                 game.state.player.addCoins(25);
-                game.state.player.addToInventory('Ancient Relic');
-                game.state.addEncounterInfo('You found coins and an ancient relic!', 'success', () => game.nextEncounter());
+                game.addInventoryToParty('Ancient Relic', () => {
+                    game.state.addEncounterInfo('You found coins and an ancient relic!', 'success', () => game.nextEncounter());
+                });
             })),
             new EncounterOption('🚶 Ignore it (might be trapped)', Actions.direct((game) => {
                 game.state.addEncounterInfo('You cautiously move on without touching the chest.', 'info', () => game.nextEncounter());
