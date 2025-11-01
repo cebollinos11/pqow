@@ -13,6 +13,7 @@ class HexMap {
         this.height = height;
         this.mode = 'view'; // 'view' or 'edit'
         this.playerPos = { col: 0, row: 0 };
+        this.selectedHex = null; // Track selected hex for travel
 
         // Zoom and pan properties
         this.zoom = 1;
@@ -33,6 +34,13 @@ class HexMap {
         this.currentTerrain = 'plains';
         this.currentLocation = null;
         this.isDragging = false;
+
+        // Create travel button UI element
+        this.travelButton = document.createElement('button');
+        this.travelButton.className = 'travel-btn';
+        this.travelButton.style.display = 'none';
+        this.travelButton.style.position = 'absolute';
+        this.container.appendChild(this.travelButton);
         
         this.terrainColors = {
             plains: '#90EE90',
@@ -185,7 +193,63 @@ class HexMap {
     getHexAt(col, row) {
         return this.mapData.hexes.find(h => h.col === col && h.row === row);
     }
-    
+
+    showTravelButton(col, row, clickX, clickY) {
+        // Don't show button if clicking on current position
+        if (col === this.playerPos.col && row === this.playerPos.row) {
+            this.hideTravelButton();
+            return;
+        }
+
+        const hex = this.getHexAt(col, row);
+        if (!hex) return;
+
+        // Store selected hex
+        this.selectedHex = { col, row };
+
+        // Get terrain name (capitalize first letter)
+        const terrainName = hex.terrain.charAt(0).toUpperCase() + hex.terrain.slice(1);
+
+        // Position button below the clicked hex
+        this.travelButton.textContent = `🚶 Travel to ${terrainName}`;
+        this.travelButton.style.left = `${clickX}px`;
+        this.travelButton.style.top = `${clickY + 30}px`;
+        this.travelButton.style.display = 'block';
+
+        // Remove old event listener and add new one
+        const newButton = this.travelButton.cloneNode(true);
+        this.travelButton.parentNode.replaceChild(newButton, this.travelButton);
+        this.travelButton = newButton;
+
+        this.travelButton.addEventListener('click', (e) => {
+            e.stopPropagation();
+            this.travelToSelectedHex();
+        });
+    }
+
+    hideTravelButton() {
+        this.travelButton.style.display = 'none';
+        this.selectedHex = null;
+    }
+
+    travelToSelectedHex() {
+        if (!this.selectedHex) return;
+
+        const hex = this.getHexAt(this.selectedHex.col, this.selectedHex.row);
+        if (!hex) return;
+
+        const terrainName = hex.terrain.charAt(0).toUpperCase() + hex.terrain.slice(1);
+
+        // Log the travel
+        console.log(`🚶 Traveling to ${terrainName} at (${this.selectedHex.col}, ${this.selectedHex.row})`);
+
+        // Move player
+        this.setPlayerPosition(this.selectedHex.col, this.selectedHex.row);
+
+        // Hide button
+        this.hideTravelButton();
+    }
+
     setPlayerPosition(col, row) {
         this.playerPos = { col, row };
         this.draw();
@@ -209,6 +273,7 @@ class HexMap {
     
     setMode(mode) {
         this.mode = mode;
+        this.hideTravelButton(); // Hide travel button when switching modes
     }
 
     setCurrentTerrain(terrain) {
@@ -287,7 +352,7 @@ class HexMap {
             const hexCoord = this.pixelToHex(x, y);
 
             if (this.mode === 'view') {
-                this.setPlayerPosition(hexCoord.col, hexCoord.row);
+                this.showTravelButton(hexCoord.col, hexCoord.row, x, y);
             } else if (this.mode === 'edit') {
                 this.handleEditClick(hexCoord.col, hexCoord.row);
             }
@@ -295,6 +360,7 @@ class HexMap {
 
         this.canvas.addEventListener('mousemove', (e) => {
             if (this.isPanning) {
+                this.hideTravelButton(); // Hide button while panning
                 const rect = this.canvas.getBoundingClientRect();
                 const x = e.clientX - rect.left;
                 const y = e.clientY - rect.top;
@@ -341,6 +407,7 @@ class HexMap {
         // Zoom with mouse wheel
         this.canvas.addEventListener('wheel', (e) => {
             e.preventDefault();
+            this.hideTravelButton(); // Hide button while zooming
 
             const rect = this.canvas.getBoundingClientRect();
             const x = e.clientX - rect.left;
